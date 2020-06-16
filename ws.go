@@ -20,13 +20,13 @@ type wsServer struct {
 	*websocket.Conn
 }
 
-func newWSServer(w http.ResponseWriter, r *http.Request) *wsServer {
+func newWSServer(w http.ResponseWriter, r *http.Request) (*wsServer, error) {
 	conn, err := wsUpgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Panicf("problem upgrading connection to web socket %v\n", err)
+		return nil, err
 	}
 
-	return &wsServer{conn}
+	return &wsServer{conn}, nil
 }
 
 func (w *wsServer) listenJSON(wsMsg chan []byte) {

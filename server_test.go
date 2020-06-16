@@ -48,32 +48,13 @@ func TestHTTPRequest(t *testing.T) {
 		assertResponseCode(t, recorder.Code, http.StatusNotFound)
 	})
 
-	t.Run("/casino/5145 return 5145", func(t *testing.T) {
+	t.Run("get /casino/5145 returns 400 bad request", func(t *testing.T) {
 		server := gode.NewServer(gode.NewHub())
 
 		request, _ := http.NewRequest(http.MethodGet, "/casino/5145", nil)
 		recorder := httptest.NewRecorder()
 		server.ServeHTTP(recorder, request)
-
-		assertResponseCode(t, recorder.Code, http.StatusOK)
-		s := recorder.Body.String()
-		if s != "5145" {
-			t.Errorf("want response body %s, got %s", "5145", s)
-		}
-	})
-
-	t.Run("/casino/5156 return 5156", func(t *testing.T) {
-		server := gode.NewServer(gode.NewHub())
-
-		request, _ := http.NewRequest(http.MethodGet, "/casino/5156", nil)
-		recorder := httptest.NewRecorder()
-		server.ServeHTTP(recorder, request)
-
-		assertResponseCode(t, recorder.Code, http.StatusOK)
-		s := recorder.Body.String()
-		if s != "5156" {
-			t.Errorf("want response body %s, got %s", "5156", s)
-		}
+		assertResponseCode(t, recorder.Code, http.StatusBadRequest)
 	})
 }
 
