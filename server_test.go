@@ -14,6 +14,7 @@ import (
 func TestConnectionPool(t *testing.T) {
 	hub := gode.NewHub()
 	Server := httptest.NewServer(gode.NewServer(hub))
+	defer Server.Close()
 
 	t.Run("NumberOfClients return number of clients from hub", func(t *testing.T) {
 		assertNumberOfClient(t, 0, hub.NumberOfClients())
@@ -22,7 +23,6 @@ func TestConnectionPool(t *testing.T) {
 	client1 := mustDialWS(t, makeWebSocketURL(Server, "/casino/5145"))
 	client2 := mustDialWS(t, makeWebSocketURL(Server, "/casino/5145"))
 	_ = mustDialWS(t, makeWebSocketURL(Server, "/casino/5145"))
-	defer Server.Close()
 
 	t.Run("register when client connect", func(t *testing.T) {
 		assertNumberOfClient(t, 3, hub.NumberOfClients())

@@ -18,10 +18,8 @@ func NewServer(hub *Hub) (s *Server) {
 	}
 
 	router := http.NewServeMux()
-
 	// handle game process
 	router.Handle("/casino/", http.HandlerFunc(s.gameHandler))
-
 	s.Handler = router
 
 	return
@@ -39,7 +37,7 @@ func (s *Server) gameHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	_ = s.h.register(client)
 
-	gameType := strings.TrimLeft(r.URL.Path, "/casino/")
+	gameType := s.parseGameType(r)
 	ws.writeBinaryMsg([]byte(gameType))
 
 	// handle disconnect
@@ -47,4 +45,10 @@ func (s *Server) gameHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		s.h.unregister(client)
 	}
+}
+
+func (s *Server) parseGameType(r *http.Request) (gameType string) {
+	gameType = strings.TrimLeft(r.URL.Path, "/casino/")
+
+	return
 }
