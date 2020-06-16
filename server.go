@@ -19,9 +19,6 @@ func NewServer(hub *Hub) (s *Server) {
 
 	router := http.NewServeMux()
 
-	// for dev purpose: echo anything
-	router.Handle("/echo", http.HandlerFunc(s.echoHandler))
-
 	// handle game process
 	router.Handle("/casino/", http.HandlerFunc(s.gameHandler))
 
@@ -44,15 +41,4 @@ func (s *Server) gameHandler(w http.ResponseWriter, r *http.Request) {
 
 	gameType := strings.TrimLeft(r.URL.Path, "/casino/")
 	ws.writeBinaryMsg([]byte(gameType))
-}
-
-func (s *Server) echoHandler(w http.ResponseWriter, r *http.Request) {
-	client := &Client{
-		IP: r.Header.Get("X-FORWARDED-FOR"),
-	}
-	_ = s.h.register(client)
-
-	ws, _ := newWSServer(w, r)
-	_, p, _ := ws.ReadMessage()
-	ws.writeBinaryMsg(p)
 }

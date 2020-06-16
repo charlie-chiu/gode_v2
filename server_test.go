@@ -61,19 +61,6 @@ func TestHTTPRequest(t *testing.T) {
 func TestWebSocket(t *testing.T) {
 	const timeout = time.Second
 
-	t.Run("/echo echo ws message before timeout", func(t *testing.T) {
-		Server := httptest.NewServer(gode.NewServer(gode.NewHub()))
-		wsClient := mustDialWS(t, makeWebSocketURL(Server, "/echo"))
-		defer Server.Close()
-		defer wsClient.Close()
-
-		within(t, timeout, func() {
-			msg := "hello"
-			writeBinaryMsg(t, wsClient, msg)
-			assertReceiveBinaryMsg(t, wsClient, msg)
-		})
-	})
-
 	t.Run("/casino/5145 send ws msg 5145 on connect", func(t *testing.T) {
 		Server := httptest.NewServer(gode.NewServer(gode.NewHub()))
 		wsClient := mustDialWS(t, makeWebSocketURL(Server, "/casino/5145"))
