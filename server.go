@@ -23,19 +23,24 @@ func NewServer(hub *Hub) (s *Server) {
 	router.Handle("/echo", http.HandlerFunc(s.echoHandler))
 
 	// handle game process
-	router.Handle("/casino/", http.HandlerFunc(gameHandler))
+	router.Handle("/casino/", http.HandlerFunc(s.gameHandler))
 
 	s.Handler = router
 
 	return
 }
 
-func gameHandler(w http.ResponseWriter, r *http.Request) {
+func (s *Server) gameHandler(w http.ResponseWriter, r *http.Request) {
 	ws, err := newWSServer(w, r)
 	if err != nil {
 		fmt.Fprint(w, "")
 		return
 	}
+
+	client := &Client{
+		IP: r.Header.Get("X-FORWARDED-FOR"),
+	}
+	_ = s.h.register(client)
 
 	gameType := strings.TrimLeft(r.URL.Path, "/casino/")
 	ws.writeBinaryMsg([]byte(gameType))

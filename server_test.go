@@ -19,9 +19,9 @@ func TestConnectionPool(t *testing.T) {
 		assertNumberOfClient(t, 0, hub.NumberOfClients())
 	})
 
-	_ = mustDialWS(t, makeWebSocketURL(Server, "/echo"))
-	_ = mustDialWS(t, makeWebSocketURL(Server, "/echo"))
-	_ = mustDialWS(t, makeWebSocketURL(Server, "/echo"))
+	_ = mustDialWS(t, makeWebSocketURL(Server, "/casino/5145"))
+	_ = mustDialWS(t, makeWebSocketURL(Server, "/casino/5145"))
+	_ = mustDialWS(t, makeWebSocketURL(Server, "/casino/5145"))
 	defer Server.Close()
 
 	t.Run("register when client connect", func(t *testing.T) {
