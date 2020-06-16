@@ -41,4 +41,10 @@ func (s *Server) gameHandler(w http.ResponseWriter, r *http.Request) {
 
 	gameType := strings.TrimLeft(r.URL.Path, "/casino/")
 	ws.writeBinaryMsg([]byte(gameType))
+
+	// handle disconnect
+	_, _, err = ws.ReadMessage()
+	if err != nil {
+		s.h.unregister(client)
+	}
 }
