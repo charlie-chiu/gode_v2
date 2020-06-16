@@ -11,9 +11,34 @@ import (
 	"gode"
 )
 
+func TestConnectionPool(t *testing.T) {
+	hub := gode.NewHub()
+	Server := httptest.NewServer(gode.NewServer(hub))
+
+	t.Run("NumberOfClients return number of clients from hub", func(t *testing.T) {
+		assertNumberOfClient(t, 0, hub.NumberOfClients())
+	})
+
+	_ = mustDialWS(t, makeWebSocketURL(Server, "/echo"))
+	_ = mustDialWS(t, makeWebSocketURL(Server, "/echo"))
+	_ = mustDialWS(t, makeWebSocketURL(Server, "/echo"))
+	defer Server.Close()
+
+	t.Run("register when client connect", func(t *testing.T) {
+		assertNumberOfClient(t, 3, hub.NumberOfClients())
+	})
+}
+
+func assertNumberOfClient(t *testing.T, wanted, got int) {
+	t.Helper()
+	if got != wanted {
+		t.Errorf("wanted number of clients %d, got, %d", wanted, got)
+	}
+}
+
 func TestHTTPRequest(t *testing.T) {
 	t.Run("/ returns 404", func(t *testing.T) {
-		server := gode.NewServer()
+		server := gode.NewServer(gode.NewHub())
 
 		request, _ := http.NewRequest(http.MethodGet, "/", nil)
 		recorder := httptest.NewRecorder()
@@ -24,7 +49,7 @@ func TestHTTPRequest(t *testing.T) {
 	})
 
 	t.Run("/casino/5145 return 5145", func(t *testing.T) {
-		server := gode.NewServer()
+		server := gode.NewServer(gode.NewHub())
 
 		request, _ := http.NewRequest(http.MethodGet, "/casino/5145", nil)
 		recorder := httptest.NewRecorder()
@@ -38,7 +63,7 @@ func TestHTTPRequest(t *testing.T) {
 	})
 
 	t.Run("/casino/5156 return 5156", func(t *testing.T) {
-		server := gode.NewServer()
+		server := gode.NewServer(gode.NewHub())
 
 		request, _ := http.NewRequest(http.MethodGet, "/casino/5156", nil)
 		recorder := httptest.NewRecorder()
@@ -56,7 +81,7 @@ func TestWebSocket(t *testing.T) {
 	const timeout = time.Second
 
 	t.Run("/echo echo ws message before timeout", func(t *testing.T) {
-		Server := httptest.NewServer(gode.NewServer())
+		Server := httptest.NewServer(gode.NewServer(gode.NewHub()))
 		wsClient := mustDialWS(t, makeWebSocketURL(Server, "/echo"))
 		defer Server.Close()
 		defer wsClient.Close()
