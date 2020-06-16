@@ -73,6 +73,28 @@ func TestWebSocket(t *testing.T) {
 			assertReceiveBinaryMsg(t, wsClient, msg)
 		})
 	})
+
+	t.Run("/casino/5145 send ws msg 5145 on connect", func(t *testing.T) {
+		Server := httptest.NewServer(gode.NewServer(gode.NewHub()))
+		wsClient := mustDialWS(t, makeWebSocketURL(Server, "/casino/5145"))
+		defer Server.Close()
+		defer wsClient.Close()
+
+		within(t, timeout, func() {
+			assertReceiveBinaryMsg(t, wsClient, "5145")
+		})
+	})
+
+	t.Run("/casino/5188 send ws msg 5145 on connect", func(t *testing.T) {
+		Server := httptest.NewServer(gode.NewServer(gode.NewHub()))
+		wsClient := mustDialWS(t, makeWebSocketURL(Server, "/casino/5188"))
+		defer Server.Close()
+		defer wsClient.Close()
+
+		within(t, timeout, func() {
+			assertReceiveBinaryMsg(t, wsClient, "5188")
+		})
+	})
 }
 
 func assertReceiveBinaryMsg(t *testing.T, dialer *websocket.Conn, want string) {

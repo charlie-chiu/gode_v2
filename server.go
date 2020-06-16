@@ -3,6 +3,7 @@ package gode
 import (
 	"fmt"
 	"net/http"
+	"strings"
 )
 
 type Server struct {
@@ -35,7 +36,9 @@ func gameHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "")
 		return
 	}
-	_ = ws
+
+	gameType := strings.TrimLeft(r.URL.Path, "/casino/")
+	ws.writeBinaryMsg([]byte(gameType))
 }
 
 func (s *Server) echoHandler(w http.ResponseWriter, r *http.Request) {
