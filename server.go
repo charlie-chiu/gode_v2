@@ -1,7 +1,6 @@
 package gode
 
 import (
-	"encoding/json"
 	"net/http"
 	"strings"
 
@@ -67,8 +66,8 @@ func (s *Server) parseGameType(r *http.Request) (gameType string) {
 }
 
 func (s *Server) handleMessage(ws *wsServer, msg []byte) {
-	action := s.parseClientAction(msg)
-	switch action {
+	action := client.ParseData(msg)
+	switch action.Action {
 	case client.Login:
 		ws.writeBinaryMsg([]byte(`{"action":"onLogin","result":{"event":"login"}}`))
 		ws.writeBinaryMsg([]byte(`{"action":"onTakeMachine","result":{"event":"TakeMachine"}}`))
@@ -83,11 +82,4 @@ func (s *Server) handleMessage(ws *wsServer, msg []byte) {
 	case client.ExchangeBalance:
 		ws.writeBinaryMsg([]byte(`{"action":"onBalanceExchange","result":{"event":"BalanceExchange"}}`))
 	}
-}
-
-func (s *Server) parseClientAction(msg []byte) (action string) {
-	data := &client.WSData{}
-	json.Unmarshal(msg, data)
-
-	return data.Action
 }
