@@ -68,25 +68,14 @@ func TestRouter(t *testing.T) {
 func TestGameHandler(t *testing.T) {
 	const timeout = time.Second
 
-	t.Run("/casino/5145 send ws msg 5145 on connect", func(t *testing.T) {
-		Server := httptest.NewServer(gode.NewServer(gode.NewHub()))
-		wsClient := mustDialWS(t, makeWebSocketURL(Server, "/casino/5145"))
-		defer Server.Close()
-		defer wsClient.Close()
+	t.Run("ws:/casino/5145 send ready msg on connect", func(t *testing.T) {
+		server := httptest.NewServer(gode.NewServer(gode.NewHub()))
+		client := mustDialWS(t, makeWebSocketURL(server, "/casino/5145"))
+		defer server.Close()
+		defer client.Close()
 
 		within(t, timeout, func() {
-			assertReceiveBinaryMsg(t, wsClient, "5145")
-		})
-	})
-
-	t.Run("/casino/5188 send ws msg 5188 on connect", func(t *testing.T) {
-		Server := httptest.NewServer(gode.NewServer(gode.NewHub()))
-		wsClient := mustDialWS(t, makeWebSocketURL(Server, "/casino/5188"))
-		defer Server.Close()
-		defer wsClient.Close()
-
-		within(t, timeout, func() {
-			assertReceiveBinaryMsg(t, wsClient, "5188")
+			assertReceiveBinaryMsg(t, client, `{"action":"ready"}`)
 		})
 	})
 }

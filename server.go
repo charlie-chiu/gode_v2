@@ -37,8 +37,8 @@ func (s *Server) gameHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	_ = s.h.register(client)
 
-	gameType := s.parseGameType(r)
-	ws.writeBinaryMsg([]byte(gameType))
+	//gameType := s.parseGameType(r)
+	ws.writeBinaryMsg([]byte(`{"action":"ready"}`))
 
 	// handle disconnect
 	_, _, err = ws.ReadMessage()
