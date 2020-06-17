@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+
+	"gode/client"
 )
 
 type Server struct {
@@ -33,10 +35,10 @@ func (s *Server) gameHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	client := &Client{
+	c := &client.Client{
 		IP: r.Header.Get("X-FORWARDED-FOR"),
 	}
-	_ = s.h.register(client)
+	_ = s.h.register(c)
 
 	//gameType := s.parseGameType(r)
 	ws.writeBinaryMsg([]byte(`{"action":"ready"}`))
@@ -52,7 +54,7 @@ func (s *Server) gameHandler(w http.ResponseWriter, r *http.Request) {
 				s.handleMessage(ws, msg)
 			} else {
 				//s.handleDisconnect()
-				s.h.unregister(client)
+				s.h.unregister(c)
 				closed = true
 			}
 		}
@@ -66,54 +68,44 @@ func (s *Server) parseGameType(r *http.Request) (gameType string) {
 	return strings.TrimLeft(r.URL.Path, "/casino/")
 }
 
-const (
-	// actions from client
-	ClientLogin            = "loginBySid"
-	ClientOnLoadInfo       = "onLoadInfo2"
-	ClientGetMachineDetail = "getMachineDetail"
-	ClientBeginGame        = "beginGame4"
-	ClientExchangeCredit   = "creditExchange"
-	ClientExchangeBalance  = "balanceExchange"
-)
-
 func (s *Server) handleMessage(ws *wsServer, msg []byte) {
 	action := s.parseClientAction(msg)
 	switch action {
-	case ClientLogin:
+	case client.Login:
 		ws.writeBinaryMsg([]byte(`{"action":"onLogin","result":{"event":"login"}}`))
 		ws.writeBinaryMsg([]byte(`{"action":"onTakeMachine","result":{"event":"TakeMachine"}}`))
-	case ClientOnLoadInfo:
+	case client.OnLoadInfo:
 		ws.writeBinaryMsg([]byte(`{"action":"onOnLoadInfo2","result":{"event":"LoadInfo"}}`))
-	case ClientGetMachineDetail:
+	case client.GetMachineDetail:
 		ws.writeBinaryMsg([]byte(`{"action":"onGetMachineDetail","result":{"event":"MachineDetail"}}`))
-	case ClientBeginGame:
+	case client.BeginGame:
 		ws.writeBinaryMsg([]byte(`{"action":"onBeginGame","result":{"event":"BeginGame"}}`))
-	case ClientExchangeCredit:
+	case client.ExchangeCredit:
 		ws.writeBinaryMsg([]byte(`{"action":"onCreditExchange","result":{"event":"CreditExchange"}}`))
-	case ClientExchangeBalance:
+	case client.ExchangeBalance:
 		ws.writeBinaryMsg([]byte(`{"action":"onBalanceExchange","result":{"event":"BalanceExchange"}}`))
 	}
 }
 
 func (s *Server) parseClientAction(msg []byte) (action string) {
 	//should refactor this
-	if bytes.Contains(msg, []byte(ClientLogin)) {
-		return ClientLogin
+	if bytes.Contains(msg, []byte(client.Login)) {
+		return client.Login
 	}
-	if bytes.Contains(msg, []byte(ClientOnLoadInfo)) {
-		return ClientOnLoadInfo
+	if bytes.Contains(msg, []byte(client.OnLoadInfo)) {
+		return client.OnLoadInfo
 	}
-	if bytes.Contains(msg, []byte(ClientGetMachineDetail)) {
-		return ClientGetMachineDetail
+	if bytes.Contains(msg, []byte(client.GetMachineDetail)) {
+		return client.GetMachineDetail
 	}
-	if bytes.Contains(msg, []byte(ClientBeginGame)) {
-		return ClientBeginGame
+	if bytes.Contains(msg, []byte(client.BeginGame)) {
+		return client.BeginGame
 	}
-	if bytes.Contains(msg, []byte(ClientExchangeCredit)) {
-		return ClientExchangeCredit
+	if bytes.Contains(msg, []byte(client.ExchangeCredit)) {
+		return client.ExchangeCredit
 	}
-	if bytes.Contains(msg, []byte(ClientExchangeBalance)) {
-		return ClientExchangeBalance
+	if bytes.Contains(msg, []byte(client.ExchangeBalance)) {
+		return client.ExchangeBalance
 	}
 
 	return

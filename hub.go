@@ -2,27 +2,25 @@ package gode
 
 import (
 	"fmt"
+
+	"gode/client"
 )
 
 const MaxClients = 100
 
-type Client struct {
-	IP string
-}
-
 type Hub struct {
 	// Registered clients.
-	clients map[*Client]bool
+	clients map[*client.Client]bool
 }
 
 func NewHub() *Hub {
 	return &Hub{
 		//register: make(chan *Client),
-		clients: make(map[*Client]bool),
+		clients: make(map[*client.Client]bool),
 	}
 }
 
-func (h *Hub) register(client *Client) (err error) {
+func (h *Hub) register(client *client.Client) (err error) {
 	if len(h.clients) < MaxClients {
 		h.clients[client] = true
 	} else {
@@ -33,7 +31,7 @@ func (h *Hub) register(client *Client) (err error) {
 	return
 }
 
-func (h *Hub) unregister(client *Client) {
+func (h *Hub) unregister(client *client.Client) {
 	if _, ok := h.clients[client]; ok {
 		delete(h.clients, client)
 		//log.Printf("client deleted from hub, now have %d clients\n", len(h.clients))
