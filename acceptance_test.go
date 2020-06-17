@@ -1,8 +1,10 @@
 package gode_test
 
 import (
+	"log"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -10,6 +12,12 @@ import (
 	"github.com/gorilla/websocket"
 	"gode"
 )
+
+func TestMain(m *testing.M) {
+	log.SetFlags(log.Ltime + log.Lshortfile)
+
+	os.Exit(m.Run())
+}
 
 func TestHub_NumberOfClients(t *testing.T) {
 	hub := gode.NewHub()

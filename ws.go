@@ -33,7 +33,7 @@ func (w *wsServer) listenJSON(wsMsg chan []byte) {
 	for {
 		_, msg, err := w.ReadMessage()
 		if err != nil {
-			log.Println("listenJSON: ReadMessage Error: ", err)
+			//log.Println("listenJSON: ReadMessage Error: ", err)
 			close(wsMsg)
 			break
 		}
