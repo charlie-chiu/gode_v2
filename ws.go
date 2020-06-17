@@ -33,14 +33,14 @@ func (w *wsServer) listenJSON(wsMsg chan []byte) {
 	for {
 		_, msg, err := w.ReadMessage()
 		if err != nil {
-			//log.Println("listenJSON: ReadMessage Error: ", err)
+			//log.Printf("listenJSON ReadMessage Error: %v", err)
 			close(wsMsg)
 			break
 		}
 
 		//maybe shouldn't valid JSON here
 		if !json.Valid(msg) {
-			log.Println("listenJSON: not Valid JSON", string(msg))
+			//log.Printf("listenJSON Valid JSON error, got %q", string(msg))
 			continue
 		}
 
