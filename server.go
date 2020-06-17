@@ -2,7 +2,6 @@ package gode
 
 import (
 	"bytes"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -31,7 +30,6 @@ func NewServer(hub *Hub) (s *Server) {
 func (s *Server) gameHandler(w http.ResponseWriter, r *http.Request) {
 	ws, err := newWSServer(w, r)
 	if err != nil {
-		fmt.Fprint(w, "")
 		return
 	}
 
