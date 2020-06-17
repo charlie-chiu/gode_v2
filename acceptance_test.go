@@ -74,7 +74,35 @@ func TestRouter(t *testing.T) {
 }
 
 func TestGameHandler(t *testing.T) {
-	const timeout = time.Second
+	const timeout = 500 * time.Millisecond
+
+	t.Run("not response when send incorrect data", func(t *testing.T) {
+		server := httptest.NewServer(gode.NewServer(gode.NewHub()))
+		client := mustDialWS(t, makeWebSocketURL(server, "/casino/5145"))
+		defer server.Close()
+		defer client.Close()
+
+		within(t, timeout, func() {
+			assertReceiveBinaryMsg(t, client, `{"action":"ready"}`)
+		})
+
+		writeBinaryMsg(t, client, `ola ola ola`)
+		assertNoResponseWithin(t, timeout, client)
+	})
+
+	t.Run("not response when send incorrect action", func(t *testing.T) {
+		server := httptest.NewServer(gode.NewServer(gode.NewHub()))
+		client := mustDialWS(t, makeWebSocketURL(server, "/casino/5145"))
+		defer server.Close()
+		defer client.Close()
+
+		within(t, timeout, func() {
+			assertReceiveBinaryMsg(t, client, `{"action":"ready"}`)
+		})
+
+		writeBinaryMsg(t, client, `{"action": "hello"}`)
+		assertNoResponseWithin(t, timeout, client)
+	})
 
 	t.Run("ws:/casino/5145 send ready msg on connect", func(t *testing.T) {
 		server := httptest.NewServer(gode.NewServer(gode.NewHub()))
@@ -151,6 +179,21 @@ func within(t *testing.T, d time.Duration, assert func()) {
 	case <-time.After(d):
 		t.Error("timed out")
 	case <-done:
+	}
+}
+
+func assertNoResponseWithin(t *testing.T, d time.Duration, client *websocket.Conn) {
+	msgChan := make(chan []byte, 1)
+	go func() {
+		_, p, _ := client.ReadMessage()
+		msgChan <- p
+	}()
+
+	select {
+	case <-time.After(d):
+		return
+	case msg := <-msgChan:
+		t.Errorf("shouldn't get response but got %q", msg)
 	}
 }
 
