@@ -49,14 +49,7 @@ func (s *Server) gameHandler(w http.ResponseWriter, r *http.Request) {
 		select {
 		case msg, ok := <-wsMsg:
 			if ok {
-				//handle msg
-				if bytes.Contains(msg, []byte(`"action":"loginBySid"`)) {
-					ws.writeBinaryMsg([]byte(`{"action":"onLogin","result":{"event":"login"}}`))
-					ws.writeBinaryMsg([]byte(`{"action":"onTakeMachine","result":{"event":"TakeMachine"}}`))
-				}
-				if bytes.Contains(msg, []byte(`"action":"onLoadInfo2"`)) {
-					ws.writeBinaryMsg([]byte(`{"action":"onOnLoadInfo2","result":{"event":"LoadInfo"}}`))
-				}
+				s.handleMessage(ws, msg)
 			} else {
 				//s.handleDisconnect()
 				s.h.unregister(client)
@@ -71,4 +64,30 @@ func (s *Server) gameHandler(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) parseGameType(r *http.Request) (gameType string) {
 	return strings.TrimLeft(r.URL.Path, "/casino/")
+}
+
+const ClientActionLogin = "loginBySid"
+const ClientActionOnLoadInfo = "onLoadInfo2"
+
+func (s *Server) handleMessage(ws *wsServer, msg []byte) {
+	action := s.parseClientAction(msg)
+	switch action {
+	case ClientActionLogin:
+		ws.writeBinaryMsg([]byte(`{"action":"onLogin","result":{"event":"login"}}`))
+		ws.writeBinaryMsg([]byte(`{"action":"onTakeMachine","result":{"event":"TakeMachine"}}`))
+	case ClientActionOnLoadInfo:
+		ws.writeBinaryMsg([]byte(`{"action":"onOnLoadInfo2","result":{"event":"LoadInfo"}}`))
+	}
+}
+
+func (s *Server) parseClientAction(msg []byte) (action string) {
+	//refactor this
+	if bytes.Contains(msg, []byte(ClientActionLogin)) {
+		return ClientActionLogin
+	}
+	if bytes.Contains(msg, []byte(ClientActionOnLoadInfo)) {
+		return ClientActionOnLoadInfo
+	}
+
+	return
 }
