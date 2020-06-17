@@ -66,27 +66,54 @@ func (s *Server) parseGameType(r *http.Request) (gameType string) {
 	return strings.TrimLeft(r.URL.Path, "/casino/")
 }
 
-const ClientActionLogin = "loginBySid"
-const ClientActionOnLoadInfo = "onLoadInfo2"
+const (
+	// actions from client
+	ClientLogin            = "loginBySid"
+	ClientOnLoadInfo       = "onLoadInfo2"
+	ClientGetMachineDetail = "getMachineDetail"
+	ClientBeginGame        = "beginGame4"
+	ClientExchangeCredit   = "creditExchange"
+	ClientExchangeBalance  = "balanceExchange"
+)
 
 func (s *Server) handleMessage(ws *wsServer, msg []byte) {
 	action := s.parseClientAction(msg)
 	switch action {
-	case ClientActionLogin:
+	case ClientLogin:
 		ws.writeBinaryMsg([]byte(`{"action":"onLogin","result":{"event":"login"}}`))
 		ws.writeBinaryMsg([]byte(`{"action":"onTakeMachine","result":{"event":"TakeMachine"}}`))
-	case ClientActionOnLoadInfo:
+	case ClientOnLoadInfo:
 		ws.writeBinaryMsg([]byte(`{"action":"onOnLoadInfo2","result":{"event":"LoadInfo"}}`))
+	case ClientGetMachineDetail:
+		ws.writeBinaryMsg([]byte(`{"action":"onGetMachineDetail","result":{"event":"MachineDetail"}}`))
+	case ClientBeginGame:
+		ws.writeBinaryMsg([]byte(`{"action":"onBeginGame","result":{"event":"BeginGame"}}`))
+	case ClientExchangeCredit:
+		ws.writeBinaryMsg([]byte(`{"action":"onCreditExchange","result":{"event":"CreditExchange"}}`))
+	case ClientExchangeBalance:
+		ws.writeBinaryMsg([]byte(`{"action":"onBalanceExchange","result":{"event":"BalanceExchange"}}`))
 	}
 }
 
 func (s *Server) parseClientAction(msg []byte) (action string) {
-	//refactor this
-	if bytes.Contains(msg, []byte(ClientActionLogin)) {
-		return ClientActionLogin
+	//should refactor this
+	if bytes.Contains(msg, []byte(ClientLogin)) {
+		return ClientLogin
 	}
-	if bytes.Contains(msg, []byte(ClientActionOnLoadInfo)) {
-		return ClientActionOnLoadInfo
+	if bytes.Contains(msg, []byte(ClientOnLoadInfo)) {
+		return ClientOnLoadInfo
+	}
+	if bytes.Contains(msg, []byte(ClientGetMachineDetail)) {
+		return ClientGetMachineDetail
+	}
+	if bytes.Contains(msg, []byte(ClientBeginGame)) {
+		return ClientBeginGame
+	}
+	if bytes.Contains(msg, []byte(ClientExchangeCredit)) {
+		return ClientExchangeCredit
+	}
+	if bytes.Contains(msg, []byte(ClientExchangeBalance)) {
+		return ClientExchangeBalance
 	}
 
 	return

@@ -94,6 +94,22 @@ func TestGameHandler(t *testing.T) {
 			//ClientOnLoadInfo
 			writeBinaryMsg(t, client, `{"action":"onLoadInfo2","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
 			assertReceiveBinaryMsg(t, client, `{"action":"onOnLoadInfo2","result":{"event":"LoadInfo"}}`)
+
+			//ClientGetMachineDetail
+			writeBinaryMsg(t, client, `{"action":"getMachineDetail","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
+			assertReceiveBinaryMsg(t, client, `{"action":"onGetMachineDetail","result":{"event":"MachineDetail"}}`)
+
+			//開分
+			writeBinaryMsg(t, client, `{"action":"creditExchange"}`)
+			assertReceiveBinaryMsg(t, client, `{"action":"onCreditExchange","result":{"event":"CreditExchange"}}`)
+
+			//begin game
+			writeBinaryMsg(t, client, `{"action":"beginGame4"}`)
+			assertReceiveBinaryMsg(t, client, `{"action":"onBeginGame","result":{"event":"BeginGame"}}`)
+
+			//洗分
+			writeBinaryMsg(t, client, `{"action":"balanceExchange"}`)
+			assertReceiveBinaryMsg(t, client, `{"action":"onBalanceExchange","result":{"event":"BalanceExchange"}}`)
 		})
 	})
 }
