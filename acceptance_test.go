@@ -75,6 +75,7 @@ func TestGameHandler(t *testing.T) {
 		defer client.Close()
 
 		within(t, timeout, func() {
+			//ready
 			assertReceiveBinaryMsg(t, client, `{"action":"ready"}`)
 		})
 	})

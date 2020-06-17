@@ -40,10 +40,25 @@ func (s *Server) gameHandler(w http.ResponseWriter, r *http.Request) {
 	//gameType := s.parseGameType(r)
 	ws.writeBinaryMsg([]byte(`{"action":"ready"}`))
 
-	// handle disconnect
-	_, _, err = ws.ReadMessage()
-	if err != nil {
-		s.h.unregister(client)
+	// keep listen and handle ws messages
+	wsMsg := make(chan []byte)
+	go ws.listenJSON(wsMsg)
+	for {
+		closed := false
+		select {
+		case msg, ok := <-wsMsg:
+			if ok {
+				fmt.Println(string(msg))
+				//handle msg
+			} else {
+				//s.handleDisconnect()
+				s.h.unregister(client)
+				closed = true
+			}
+		}
+		if closed {
+			break
+		}
 	}
 }
 
