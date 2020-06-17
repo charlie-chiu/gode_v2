@@ -11,7 +11,7 @@ import (
 	"gode"
 )
 
-func TestConnectionPool(t *testing.T) {
+func TestHub_NumberOfClients(t *testing.T) {
 	hub := gode.NewHub()
 	Server := httptest.NewServer(gode.NewServer(hub))
 	defer Server.Close()
@@ -43,7 +43,7 @@ func assertNumberOfClient(t *testing.T, wanted, got int) {
 	}
 }
 
-func TestHTTPRequest(t *testing.T) {
+func TestRouter(t *testing.T) {
 	t.Run("/ returns 404", func(t *testing.T) {
 		server := gode.NewServer(gode.NewHub())
 
@@ -65,7 +65,7 @@ func TestHTTPRequest(t *testing.T) {
 	})
 }
 
-func TestWebSocket(t *testing.T) {
+func TestGameHandler(t *testing.T) {
 	const timeout = time.Second
 
 	t.Run("/casino/5145 send ws msg 5145 on connect", func(t *testing.T) {
@@ -79,7 +79,7 @@ func TestWebSocket(t *testing.T) {
 		})
 	})
 
-	t.Run("/casino/5188 send ws msg 5145 on connect", func(t *testing.T) {
+	t.Run("/casino/5188 send ws msg 5188 on connect", func(t *testing.T) {
 		Server := httptest.NewServer(gode.NewServer(gode.NewHub()))
 		wsClient := mustDialWS(t, makeWebSocketURL(Server, "/casino/5188"))
 		defer Server.Close()

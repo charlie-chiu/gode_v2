@@ -48,7 +48,5 @@ func (s *Server) gameHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) parseGameType(r *http.Request) (gameType string) {
-	gameType = strings.TrimLeft(r.URL.Path, "/casino/")
-
-	return
+	return strings.TrimLeft(r.URL.Path, "/casino/")
 }
