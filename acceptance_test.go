@@ -85,6 +85,11 @@ func TestGameHandler(t *testing.T) {
 		within(t, timeout, func() {
 			//ready
 			assertReceiveBinaryMsg(t, client, `{"action":"ready"}`)
+
+			//ClientLogin
+			writeBinaryMsg(t, client, `{"action":"loginBySid","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
+			assertReceiveBinaryMsg(t, client, `{"action":"onLogin","result":{"event":"login"}}`)
+			assertReceiveBinaryMsg(t, client, `{"action":"onTakeMachine","result":{"event":"TakeMachine"}}`)
 		})
 	})
 }

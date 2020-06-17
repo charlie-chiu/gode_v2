@@ -1,6 +1,7 @@
 package gode
 
 import (
+	"bytes"
 	"fmt"
 	"net/http"
 	"strings"
@@ -48,8 +49,11 @@ func (s *Server) gameHandler(w http.ResponseWriter, r *http.Request) {
 		select {
 		case msg, ok := <-wsMsg:
 			if ok {
-				fmt.Println(string(msg))
 				//handle msg
+				if bytes.Contains(msg, []byte(`"action":"loginBySid"`)) {
+					ws.writeBinaryMsg([]byte(`{"action":"onLogin","result":{"event":"login"}}`))
+					ws.writeBinaryMsg([]byte(`{"action":"onTakeMachine","result":{"event":"TakeMachine"}}`))
+				}
 			} else {
 				//s.handleDisconnect()
 				s.h.unregister(client)
