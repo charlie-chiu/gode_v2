@@ -54,6 +54,9 @@ func (s *Server) gameHandler(w http.ResponseWriter, r *http.Request) {
 					ws.writeBinaryMsg([]byte(`{"action":"onLogin","result":{"event":"login"}}`))
 					ws.writeBinaryMsg([]byte(`{"action":"onTakeMachine","result":{"event":"TakeMachine"}}`))
 				}
+				if bytes.Contains(msg, []byte(`"action":"onLoadInfo2"`)) {
+					ws.writeBinaryMsg([]byte(`{"action":"onOnLoadInfo2","result":{"event":"LoadInfo"}}`))
+				}
 			} else {
 				//s.handleDisconnect()
 				s.h.unregister(client)

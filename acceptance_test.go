@@ -14,7 +14,7 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	log.SetFlags(log.Ltime + log.Lshortfile)
+	log.SetFlags(log.Lshortfile)
 
 	os.Exit(m.Run())
 }
@@ -90,6 +90,10 @@ func TestGameHandler(t *testing.T) {
 			writeBinaryMsg(t, client, `{"action":"loginBySid","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
 			assertReceiveBinaryMsg(t, client, `{"action":"onLogin","result":{"event":"login"}}`)
 			assertReceiveBinaryMsg(t, client, `{"action":"onTakeMachine","result":{"event":"TakeMachine"}}`)
+
+			//ClientOnLoadInfo
+			writeBinaryMsg(t, client, `{"action":"onLoadInfo2","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
+			assertReceiveBinaryMsg(t, client, `{"action":"onOnLoadInfo2","result":{"event":"LoadInfo"}}`)
 		})
 	})
 }
