@@ -1,6 +1,9 @@
 package client
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"log"
+)
 
 type Client struct {
 	IP string
@@ -12,4 +15,18 @@ func ParseData(msg []byte) *WSData {
 	_ = json.Unmarshal(msg, data)
 
 	return data
+}
+
+func Response(action string, result json.RawMessage) (data json.RawMessage) {
+	response := &WSResponse{
+		Action: action,
+		Result: result,
+	}
+
+	data, err := json.Marshal(response)
+	if err != nil {
+		log.Printf("client Response JSON Marshal error, %v", err)
+	}
+
+	return
 }

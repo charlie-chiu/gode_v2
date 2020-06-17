@@ -38,7 +38,7 @@ func (s *Server) gameHandler(w http.ResponseWriter, r *http.Request) {
 	_ = s.h.register(c)
 
 	//gameType := s.parseGameType(r)
-	ws.writeBinaryMsg([]byte(`{"action":"ready"}`))
+	ws.writeBinaryMsg(client.Response(client.ReadyResponse, []byte(`null`)))
 
 	// keep listen and handle ws messages
 	wsMsg := make(chan []byte)
@@ -69,17 +69,17 @@ func (s *Server) handleMessage(ws *wsServer, msg []byte) {
 	action := client.ParseData(msg)
 	switch action.Action {
 	case client.Login:
-		ws.writeBinaryMsg([]byte(`{"action":"onLogin","result":{"event":"login"}}`))
-		ws.writeBinaryMsg([]byte(`{"action":"onTakeMachine","result":{"event":"TakeMachine"}}`))
+		ws.writeBinaryMsg(client.Response(client.LoginResponse, []byte(`{"event":"login"}`)))
+		ws.writeBinaryMsg(client.Response(client.TakeMachineResponse, []byte(`{"event":"TakeMachine"}`)))
 	case client.OnLoadInfo:
-		ws.writeBinaryMsg([]byte(`{"action":"onOnLoadInfo2","result":{"event":"LoadInfo"}}`))
+		ws.writeBinaryMsg(client.Response(client.OnLoadInfoResponse, []byte(`{"event":"LoadInfo"}`)))
 	case client.GetMachineDetail:
-		ws.writeBinaryMsg([]byte(`{"action":"onGetMachineDetail","result":{"event":"MachineDetail"}}`))
+		ws.writeBinaryMsg(client.Response(client.GetMachineDetailResponse, []byte(`{"event":"MachineDetail"}`)))
 	case client.BeginGame:
-		ws.writeBinaryMsg([]byte(`{"action":"onBeginGame","result":{"event":"BeginGame"}}`))
+		ws.writeBinaryMsg(client.Response(client.BeginGameResponse, []byte(`{"event":"BeginGame"}`)))
 	case client.ExchangeCredit:
-		ws.writeBinaryMsg([]byte(`{"action":"onCreditExchange","result":{"event":"CreditExchange"}}`))
+		ws.writeBinaryMsg(client.Response(client.ExchangeCreditResponse, []byte(`{"event":"CreditExchange"}`)))
 	case client.ExchangeBalance:
-		ws.writeBinaryMsg([]byte(`{"action":"onBalanceExchange","result":{"event":"BalanceExchange"}}`))
+		ws.writeBinaryMsg(client.Response(client.ExchangeBalanceResponse, []byte(`{"event":"BalanceExchange"}`)))
 	}
 }

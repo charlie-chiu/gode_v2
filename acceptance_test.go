@@ -83,7 +83,7 @@ func TestGameHandler(t *testing.T) {
 		defer client.Close()
 
 		within(t, timeout, func() {
-			assertReceiveBinaryMsg(t, client, `{"action":"ready"}`)
+			assertReceiveBinaryMsg(t, client, `{"action":"ready","result":null}`)
 		})
 
 		writeBinaryMsg(t, client, `ola ola ola`)
@@ -97,7 +97,7 @@ func TestGameHandler(t *testing.T) {
 		defer client.Close()
 
 		within(t, timeout, func() {
-			assertReceiveBinaryMsg(t, client, `{"action":"ready"}`)
+			assertReceiveBinaryMsg(t, client, `{"action":"ready","result":null}`)
 		})
 
 		writeBinaryMsg(t, client, `{"action": "hello"}`)
@@ -112,7 +112,7 @@ func TestGameHandler(t *testing.T) {
 
 		within(t, timeout, func() {
 			//ready
-			assertReceiveBinaryMsg(t, client, `{"action":"ready"}`)
+			assertReceiveBinaryMsg(t, client, `{"action":"ready","result":null}`)
 
 			//ClientLogin
 			writeBinaryMsg(t, client, `{"action":"loginBySid","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
@@ -154,7 +154,7 @@ func assertReceiveBinaryMsg(t *testing.T, dialer *websocket.Conn, want string) {
 	}
 	got := string(p)
 	if got != want {
-		t.Errorf("message from web socket not matched\nwant %q\n got %q", want, got)
+		t.Errorf("message from web socket not matched\nwant %s\n got %s", want, got)
 	}
 }
 
