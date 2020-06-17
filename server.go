@@ -1,7 +1,7 @@
 package gode
 
 import (
-	"bytes"
+	"encoding/json"
 	"net/http"
 	"strings"
 
@@ -86,25 +86,8 @@ func (s *Server) handleMessage(ws *wsServer, msg []byte) {
 }
 
 func (s *Server) parseClientAction(msg []byte) (action string) {
-	//should refactor this
-	if bytes.Contains(msg, []byte(client.Login)) {
-		return client.Login
-	}
-	if bytes.Contains(msg, []byte(client.OnLoadInfo)) {
-		return client.OnLoadInfo
-	}
-	if bytes.Contains(msg, []byte(client.GetMachineDetail)) {
-		return client.GetMachineDetail
-	}
-	if bytes.Contains(msg, []byte(client.BeginGame)) {
-		return client.BeginGame
-	}
-	if bytes.Contains(msg, []byte(client.ExchangeCredit)) {
-		return client.ExchangeCredit
-	}
-	if bytes.Contains(msg, []byte(client.ExchangeBalance)) {
-		return client.ExchangeBalance
-	}
+	data := &client.WSData{}
+	json.Unmarshal(msg, data)
 
-	return
+	return data.Action
 }
