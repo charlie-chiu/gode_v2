@@ -18,8 +18,15 @@ func NewFlash2db(host string) *Flash2db {
 }
 
 func (f *Flash2db) Call(service, function string, parameters ...interface{}) ([]byte, error) {
-	response, _ := http.Get(f.host + f.makeURL(service, function, parameters...))
+	response, err := http.Get(f.host + f.makeURL(service, function, parameters...))
+	if err != nil {
+		return nil, fmt.Errorf("flash2db get error %v", err)
+	}
+	if response.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("flash2db not got code 200")
+	}
 	defer response.Body.Close()
+	//todo: understand what this error means
 	content, _ := ioutil.ReadAll(response.Body)
 
 	return content, nil

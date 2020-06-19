@@ -31,6 +31,43 @@ func TestFlash2db_Call(t *testing.T) {
 			t.Errorf("want %s, got %s", APIResult, gotResult)
 		}
 	})
+
+	t.Run("returns error when connect failed", func(t *testing.T) {
+		f := NewFlash2db("http://not.exists")
+		_, err := f.Call("dummyServer", "dummyFunc", "dummyParam")
+
+		if err == nil {
+			t.Errorf("expected an error but not got one")
+		}
+	})
+
+	t.Run("returns error when not found", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte(`1231345fg`))
+		}))
+
+		f := NewFlash2db(server.URL)
+		_, err := f.Call("dummyServer", "dummyFunc", "dummyParam")
+
+		if err == nil {
+			t.Errorf("expected an error but not got one")
+		}
+	})
+
+	t.Run("returns error when got 500 error", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}))
+
+		f := NewFlash2db(server.URL)
+		_, err := f.Call("dummyServer", "dummyFunc", "dummyParam")
+
+		if err == nil {
+			t.Errorf("expected an error but not got one")
+		}
+	})
 }
 
 func TestMakeURL(t *testing.T) {
