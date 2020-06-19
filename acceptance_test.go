@@ -115,7 +115,7 @@ func TestGameHandler(t *testing.T) {
 		assertNoResponseWithin(t, timeout, client)
 	})
 
-	t.Run("ws:/casino/5145 send ready msg on connect", func(t *testing.T) {
+	t.Run("ws:/casino/5145 handle casino game process", func(t *testing.T) {
 		caller := &StubCaller{}
 		server := httptest.NewServer(gode.NewServer(gode.NewHub(), caller))
 		client := mustDialWS(t, makeWebSocketURL(server, "/casino/5145"))
