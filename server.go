@@ -11,15 +11,15 @@ import (
 type Server struct {
 	http.Handler
 
-	h *Hub
+	clients ClientPool
 
 	api casinoapi.Caller
 }
 
-func NewServer(hub *Hub, caller casinoapi.Caller) (s *Server) {
+func NewServer(clients ClientPool, caller casinoapi.Caller) (s *Server) {
 	s = &Server{
-		h:   hub,
-		api: caller,
+		clients: clients,
+		api:     caller,
 	}
 
 	router := http.NewServeMux()
@@ -39,7 +39,7 @@ func (s *Server) gameHandler(w http.ResponseWriter, r *http.Request) {
 	c := &client.Client{
 		IP: r.Header.Get("X-FORWARDED-FOR"),
 	}
-	_ = s.h.register(c)
+	_ = s.clients.Register(c)
 
 	//gameType := s.parseGameType(r)
 	ws.writeBinaryMsg(client.Response(client.ReadyResponse, []byte(`null`)))
@@ -55,7 +55,7 @@ func (s *Server) gameHandler(w http.ResponseWriter, r *http.Request) {
 				s.handleMessage(ws, msg)
 			} else {
 				//s.handleDisconnect()
-				s.h.unregister(c)
+				s.clients.Unregister(c)
 				closed = true
 			}
 		}

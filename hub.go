@@ -8,6 +8,11 @@ import (
 
 const MaxClients = 100
 
+type ClientPool interface {
+	Register(*client.Client) error
+	Unregister(*client.Client)
+}
+
 type Hub struct {
 	// Registered clients.
 	clients map[*client.Client]bool
@@ -20,21 +25,21 @@ func NewHub() *Hub {
 	}
 }
 
-func (h *Hub) register(client *client.Client) (err error) {
+func (h *Hub) Register(client *client.Client) (err error) {
 	if len(h.clients) < MaxClients {
 		h.clients[client] = true
 	} else {
 		return fmt.Errorf("client full")
 	}
-	//log.Printf("new client add to hub, now have %d clients\n", len(h.clients))
+	//log.Printf("new client add to hub, now have %d clients\n", len(clients.clients))
 
 	return
 }
 
-func (h *Hub) unregister(client *client.Client) {
+func (h *Hub) Unregister(client *client.Client) {
 	if _, ok := h.clients[client]; ok {
 		delete(h.clients, client)
-		//log.Printf("client deleted from hub, now have %d clients\n", len(h.clients))
+		//log.Printf("client deleted from hub, now have %d clients\n", len(clients.clients))
 	}
 }
 
