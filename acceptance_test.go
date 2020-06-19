@@ -13,6 +13,12 @@ import (
 	"gode"
 )
 
+type StubCaller struct{}
+
+func (StubCaller) Call(service string, functionName string, parameters ...interface{}) ([]byte, error) {
+	panic("implement me")
+}
+
 func TestMain(m *testing.M) {
 	log.SetFlags(log.Lshortfile)
 
@@ -21,7 +27,8 @@ func TestMain(m *testing.M) {
 
 func TestHub_NumberOfClients(t *testing.T) {
 	hub := gode.NewHub()
-	Server := httptest.NewServer(gode.NewServer(hub))
+	caller := &StubCaller{}
+	Server := httptest.NewServer(gode.NewServer(hub, caller))
 	defer Server.Close()
 
 	t.Run("NumberOfClients return number of clients from hub", func(t *testing.T) {
@@ -53,7 +60,8 @@ func assertNumberOfClient(t *testing.T, wanted, got int) {
 
 func TestRouter(t *testing.T) {
 	t.Run("/ returns 404", func(t *testing.T) {
-		server := gode.NewServer(gode.NewHub())
+		caller := &StubCaller{}
+		server := gode.NewServer(gode.NewHub(), caller)
 
 		request, _ := http.NewRequest(http.MethodGet, "/", nil)
 		recorder := httptest.NewRecorder()
@@ -64,7 +72,8 @@ func TestRouter(t *testing.T) {
 	})
 
 	t.Run("get /casino/5145 returns 400 bad request", func(t *testing.T) {
-		server := gode.NewServer(gode.NewHub())
+		caller := &StubCaller{}
+		server := gode.NewServer(gode.NewHub(), caller)
 
 		request, _ := http.NewRequest(http.MethodGet, "/casino/5145", nil)
 		recorder := httptest.NewRecorder()
@@ -77,7 +86,8 @@ func TestGameHandler(t *testing.T) {
 	const timeout = 500 * time.Millisecond
 
 	t.Run("not response when send incorrect data", func(t *testing.T) {
-		server := httptest.NewServer(gode.NewServer(gode.NewHub()))
+		caller := &StubCaller{}
+		server := httptest.NewServer(gode.NewServer(gode.NewHub(), caller))
 		client := mustDialWS(t, makeWebSocketURL(server, "/casino/5145"))
 		defer server.Close()
 		defer client.Close()
@@ -91,7 +101,8 @@ func TestGameHandler(t *testing.T) {
 	})
 
 	t.Run("not response when send incorrect action", func(t *testing.T) {
-		server := httptest.NewServer(gode.NewServer(gode.NewHub()))
+		caller := &StubCaller{}
+		server := httptest.NewServer(gode.NewServer(gode.NewHub(), caller))
 		client := mustDialWS(t, makeWebSocketURL(server, "/casino/5145"))
 		defer server.Close()
 		defer client.Close()
@@ -105,7 +116,8 @@ func TestGameHandler(t *testing.T) {
 	})
 
 	t.Run("ws:/casino/5145 send ready msg on connect", func(t *testing.T) {
-		server := httptest.NewServer(gode.NewServer(gode.NewHub()))
+		caller := &StubCaller{}
+		server := httptest.NewServer(gode.NewServer(gode.NewHub(), caller))
 		client := mustDialWS(t, makeWebSocketURL(server, "/casino/5145"))
 		defer server.Close()
 		defer client.Close()

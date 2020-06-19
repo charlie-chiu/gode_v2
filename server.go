@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strings"
 
+	"gode/casinoapi"
 	"gode/client"
 )
 
@@ -11,11 +12,14 @@ type Server struct {
 	http.Handler
 
 	h *Hub
+
+	api casinoapi.Caller
 }
 
-func NewServer(hub *Hub) (s *Server) {
+func NewServer(hub *Hub, caller casinoapi.Caller) (s *Server) {
 	s = &Server{
-		h: hub,
+		h:   hub,
+		api: caller,
 	}
 
 	router := http.NewServeMux()
