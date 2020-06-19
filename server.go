@@ -66,8 +66,8 @@ func (s *Server) parseGameType(r *http.Request) (gameType string) {
 }
 
 func (s *Server) handleMessage(ws *wsServer, msg []byte) {
-	action := client.ParseData(msg)
-	switch action.Action {
+	data := client.ParseData(msg)
+	switch data.Action {
 	case client.Login:
 		ws.writeBinaryMsg(client.Response(client.LoginResponse, []byte(`{"event":"login"}`)))
 		ws.writeBinaryMsg(client.Response(client.TakeMachineResponse, []byte(`{"event":"TakeMachine"}`)))
