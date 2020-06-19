@@ -2,6 +2,7 @@ package casinoapi
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strings"
 )
@@ -17,9 +18,11 @@ func NewFlash2db(host string) *Flash2db {
 }
 
 func (f *Flash2db) Call(service, function string, parameters ...interface{}) ([]byte, error) {
-	http.Get(f.host + f.makeURL(service, function, parameters...))
+	response, _ := http.Get(f.host + f.makeURL(service, function, parameters...))
+	defer response.Body.Close()
+	content, _ := ioutil.ReadAll(response.Body)
 
-	return []byte(``), nil
+	return content, nil
 }
 
 func (f *Flash2db) makeURL(service, function string, parameters ...interface{}) (URL string) {
