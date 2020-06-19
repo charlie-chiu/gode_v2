@@ -46,7 +46,7 @@ func TestHub_NumberOfClients(t *testing.T) {
 	t.Run("unregister when client connect", func(t *testing.T) {
 		client1.Close()
 		client2.Close()
-		time.Sleep(10 * time.Millisecond)
+		waitForProcess()
 		assertNumberOfClient(t, 1, hub.NumberOfClients())
 	})
 }
@@ -228,4 +228,8 @@ func mustDialWS(t *testing.T, url string) *websocket.Conn {
 func makeWebSocketURL(server *httptest.Server, path string) string {
 	url := "ws" + strings.TrimPrefix(server.URL, "http") + path
 	return url
+}
+
+func waitForProcess() {
+	time.Sleep(1 * time.Millisecond)
 }
