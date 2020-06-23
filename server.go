@@ -2,6 +2,7 @@ package gode
 
 import (
 	"net/http"
+	"strconv"
 	"strings"
 
 	"gode/casinoapi"
@@ -36,12 +37,15 @@ func (s *Server) gameHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// make sure every connection will get different client
+	gameType := s.parseGameType(r)
+	parseUint, err := strconv.ParseUint(gameType, 10, 0)
 	c := &client.Client{
-		IP: r.Header.Get("X-FORWARDED-FOR"),
+		GameType: uint16(parseUint),
+		IP:       r.Header.Get("X-FORWARDED-FOR"),
 	}
 	_ = s.clients.Register(c)
 
-	//gameType := s.parseGameType(r)
 	ws.writeBinaryMsg(client.Response(client.ReadyResponse, []byte(`null`)))
 
 	// keep listen and handle ws messages

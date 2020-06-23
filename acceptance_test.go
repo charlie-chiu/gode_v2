@@ -11,6 +11,7 @@ import (
 
 	"github.com/gorilla/websocket"
 	"gode"
+	"gode/client"
 )
 
 type SpyCaller struct {
@@ -35,6 +36,18 @@ type apiLog struct {
 	parameters []interface{}
 }
 
+type SpyHub struct {
+	clients []client.Client
+}
+
+func (h *SpyHub) Register(client *client.Client) error {
+	h.clients = append(h.clients, *client)
+
+	return nil
+}
+
+func (h *SpyHub) Unregister(client *client.Client) {}
+
 func TestMain(m *testing.M) {
 	log.SetFlags(log.Lshortfile)
 
@@ -42,6 +55,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestHub_NumberOfClients(t *testing.T) {
+	//todo: 測試不該這樣組織，應該重寫。
 	hub := gode.NewHub()
 	caller := &SpyCaller{}
 	Server := httptest.NewServer(gode.NewServer(hub, caller))
@@ -111,6 +125,25 @@ func TestRouter(t *testing.T) {
 		got := caller.history[0].service
 		if got != want {
 			t.Errorf("called service wrong, want %q, got %q", want, got)
+		}
+	})
+
+	t.Run("/casino/{gameType} store game type in client", func(t *testing.T) {
+		caller := &SpyCaller{}
+		spyHub := &SpyHub{}
+		server := httptest.NewServer(gode.NewServer(spyHub, caller))
+		wsClient := mustDialWS(t, makeWebSocketURL(server, "/casino/5145"))
+		wsClient2 := mustDialWS(t, makeWebSocketURL(server, "/casino/5188"))
+		defer server.Close()
+		defer wsClient.Close()
+		defer wsClient2.Close()
+
+		waitForProcess()
+		if spyHub.clients[0].GameType != 5145 {
+			t.Errorf("expected client0 has game type %d , got %d", 5145, spyHub.clients[0].GameType)
+		}
+		if spyHub.clients[1].GameType != 5188 {
+			t.Errorf("expected client0 has game type %d , got %d", 5188, spyHub.clients[1].GameType)
 		}
 	})
 }
