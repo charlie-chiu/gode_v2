@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -178,7 +179,7 @@ func TestGameHandler(t *testing.T) {
 		assertNoResponseWithin(t, timeout, client)
 	})
 
-	t.Run("ws:/casino/5145 handle casino game process", func(t *testing.T) {
+	t.Run("response ws message", func(t *testing.T) {
 		caller := &SpyCaller{}
 		server := httptest.NewServer(gode.NewServer(gode.NewHub(), caller))
 		client := mustDialWS(t, makeWebSocketURL(server, "/casino/5145"))
@@ -214,6 +215,37 @@ func TestGameHandler(t *testing.T) {
 			writeBinaryMsg(t, client, `{"action":"balanceExchange"}`)
 			assertReceiveBinaryMsg(t, client, `{"action":"onBalanceExchange","result":{"event":"BalanceExchange"}}`)
 		})
+	})
+
+	t.Run("call casino api", func(t *testing.T) {
+		spyCaller := &SpyCaller{}
+		server := httptest.NewServer(gode.NewServer(gode.NewHub(), spyCaller))
+		wsClient := mustDialWS(t, makeWebSocketURL(server, "/casino/5145"))
+		defer server.Close()
+		defer wsClient.Close()
+
+		writeBinaryMsg(t, wsClient, `{"action":"loginBySid","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
+
+		waitForProcess()
+		//uid := 100
+		//hid := 6
+		//gameCode := 50
+		expectedHistory := apiHistory{
+			{
+				service:    "Client",
+				function:   "loginCheck",
+				parameters: []interface{}{"21d9b36e42c8275a4359f6815b859df05ec2bb0a"},
+			},
+			//{
+			//	service:    "casino.slot.line243.BuBuGaoSheng",
+			//	function:   "machineOccupy",
+			//	parameters: []interface{}{uid, hid, gameCode},
+			//},
+		}
+
+		if !reflect.DeepEqual(expectedHistory, spyCaller.history) {
+			t.Errorf("api history not equal,\nwant:%+v\n got:%+v", expectedHistory, spyCaller.history)
+		}
 	})
 }
 

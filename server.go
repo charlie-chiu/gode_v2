@@ -78,6 +78,7 @@ func (s *Server) handleMessage(ws *wsServer, msg []byte) {
 	data := client.ParseData(msg)
 	switch data.Action {
 	case client.Login:
+		s.api.Call("Client", "loginCheck", data.SessionID)
 		ws.writeBinaryMsg(client.Response(client.LoginResponse, []byte(`{"event":"login"}`)))
 		ws.writeBinaryMsg(client.Response(client.TakeMachineResponse, []byte(`{"event":"TakeMachine"}`)))
 	case client.OnLoadInfo:
