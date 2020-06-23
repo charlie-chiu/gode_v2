@@ -13,10 +13,26 @@ import (
 	"gode"
 )
 
-type StubCaller struct{}
+type SpyCaller struct {
+	history apiHistory
+}
 
-func (StubCaller) Call(service string, functionName string, parameters ...interface{}) ([]byte, error) {
-	panic("implement me")
+func (c *SpyCaller) Call(service string, functionName string, parameters ...interface{}) ([]byte, error) {
+	c.history = append(c.history, apiLog{
+		service:    service,
+		function:   functionName,
+		parameters: parameters,
+	})
+
+	return []byte(``), nil
+}
+
+type apiHistory []apiLog
+
+type apiLog struct {
+	service    string
+	function   string
+	parameters []interface{}
 }
 
 func TestMain(m *testing.M) {
@@ -27,7 +43,7 @@ func TestMain(m *testing.M) {
 
 func TestHub_NumberOfClients(t *testing.T) {
 	hub := gode.NewHub()
-	caller := &StubCaller{}
+	caller := &SpyCaller{}
 	Server := httptest.NewServer(gode.NewServer(hub, caller))
 	defer Server.Close()
 
@@ -60,7 +76,7 @@ func assertNumberOfClient(t *testing.T, wanted, got int) {
 
 func TestRouter(t *testing.T) {
 	t.Run("/ returns 404", func(t *testing.T) {
-		caller := &StubCaller{}
+		caller := &SpyCaller{}
 		server := gode.NewServer(gode.NewHub(), caller)
 
 		request, _ := http.NewRequest(http.MethodGet, "/", nil)
@@ -72,7 +88,7 @@ func TestRouter(t *testing.T) {
 	})
 
 	t.Run("get /casino/5145 returns 400 bad request", func(t *testing.T) {
-		caller := &StubCaller{}
+		caller := &SpyCaller{}
 		server := gode.NewServer(gode.NewHub(), caller)
 
 		request, _ := http.NewRequest(http.MethodGet, "/casino/5145", nil)
@@ -80,13 +96,30 @@ func TestRouter(t *testing.T) {
 		server.ServeHTTP(recorder, request)
 		assertResponseCode(t, recorder.Code, http.StatusBadRequest)
 	})
+
+	t.Run("/casino/5145 call 5145 api", func(t *testing.T) {
+		caller := &SpyCaller{}
+		server := httptest.NewServer(gode.NewServer(gode.NewHub(), caller))
+		client := mustDialWS(t, makeWebSocketURL(server, "/casino/5145"))
+		defer server.Close()
+		defer client.Close()
+
+		writeBinaryMsg(t, client, `{"action":"beginGame4"}`)
+		waitForProcess()
+
+		want := "5145"
+		got := caller.history[0].service
+		if got != want {
+			t.Errorf("called service wrong, want %q, got %q", want, got)
+		}
+	})
 }
 
 func TestGameHandler(t *testing.T) {
 	const timeout = 500 * time.Millisecond
 
 	t.Run("not response when send incorrect data", func(t *testing.T) {
-		caller := &StubCaller{}
+		caller := &SpyCaller{}
 		server := httptest.NewServer(gode.NewServer(gode.NewHub(), caller))
 		client := mustDialWS(t, makeWebSocketURL(server, "/casino/5145"))
 		defer server.Close()
@@ -101,7 +134,7 @@ func TestGameHandler(t *testing.T) {
 	})
 
 	t.Run("not response when send incorrect action", func(t *testing.T) {
-		caller := &StubCaller{}
+		caller := &SpyCaller{}
 		server := httptest.NewServer(gode.NewServer(gode.NewHub(), caller))
 		client := mustDialWS(t, makeWebSocketURL(server, "/casino/5145"))
 		defer server.Close()
@@ -116,7 +149,7 @@ func TestGameHandler(t *testing.T) {
 	})
 
 	t.Run("ws:/casino/5145 handle casino game process", func(t *testing.T) {
-		caller := &StubCaller{}
+		caller := &SpyCaller{}
 		server := httptest.NewServer(gode.NewServer(gode.NewHub(), caller))
 		client := mustDialWS(t, makeWebSocketURL(server, "/casino/5145"))
 		defer server.Close()

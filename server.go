@@ -80,6 +80,7 @@ func (s *Server) handleMessage(ws *wsServer, msg []byte) {
 	case client.GetMachineDetail:
 		ws.writeBinaryMsg(client.Response(client.GetMachineDetailResponse, []byte(`{"event":"MachineDetail"}`)))
 	case client.BeginGame:
+		s.api.Call("5145", "beginGame")
 		ws.writeBinaryMsg(client.Response(client.BeginGameResponse, []byte(`{"event":"BeginGame"}`)))
 	case client.ExchangeCredit:
 		ws.writeBinaryMsg(client.Response(client.ExchangeCreditResponse, []byte(`{"event":"CreditExchange"}`)))
