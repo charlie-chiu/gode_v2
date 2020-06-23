@@ -7,7 +7,6 @@ import (
 
 type Client struct {
 	GameType uint16
-	IP       string
 }
 
 func ParseData(msg []byte) *WSData {

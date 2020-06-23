@@ -42,7 +42,6 @@ func (s *Server) gameHandler(w http.ResponseWriter, r *http.Request) {
 	parseUint, err := strconv.ParseUint(gameType, 10, 0)
 	c := &client.Client{
 		GameType: uint16(parseUint),
-		IP:       r.Header.Get("X-FORWARDED-FOR"),
 	}
 	_ = s.clients.Register(c)
 
