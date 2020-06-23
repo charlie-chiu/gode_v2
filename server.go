@@ -38,10 +38,9 @@ func (s *Server) gameHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// make sure every connection will get different client
-	gameType := s.parseGameType(r)
-	parseUint, err := strconv.ParseUint(gameType, 10, 0)
+	gameType, _ := s.parseGameType(r)
 	c := &client.Client{
-		GameType: uint16(parseUint),
+		GameType: gameType,
 	}
 	_ = s.clients.Register(c)
 
@@ -68,8 +67,11 @@ func (s *Server) gameHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *Server) parseGameType(r *http.Request) (gameType string) {
-	return strings.TrimLeft(r.URL.Path, "/casino/")
+func (s *Server) parseGameType(r *http.Request) (gameType uint16, err error) {
+	gameTypeStr := strings.TrimLeft(r.URL.Path, "/casino/")
+	gameTypeUint64, err := strconv.ParseUint(gameTypeStr, 10, 0)
+
+	return uint16(gameTypeUint64), err
 }
 
 func (s *Server) handleMessage(ws *wsServer, msg []byte) {
