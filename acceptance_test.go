@@ -54,30 +54,27 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func TestHub_NumberOfClients(t *testing.T) {
-	//todo: 測試不該這樣組織，應該重寫。
-	hub := gode.NewHub()
-	caller := &SpyCaller{}
-	Server := httptest.NewServer(gode.NewServer(hub, caller))
-	defer Server.Close()
+func TestClientPool(t *testing.T) {
+	t.Run("register client on connect and unregister on disconnect", func(t *testing.T) {
+		pool := gode.NewHub()
+		Server := httptest.NewServer(gode.NewServer(pool, &SpyCaller{}))
+		defer Server.Close()
 
-	t.Run("NumberOfClients return number of clients from hub", func(t *testing.T) {
-		assertNumberOfClient(t, 0, hub.NumberOfClients())
-	})
+		// no client
+		assertNumberOfClient(t, 0, pool.NumberOfClients())
 
-	client1 := mustDialWS(t, makeWebSocketURL(Server, "/casino/5145"))
-	client2 := mustDialWS(t, makeWebSocketURL(Server, "/casino/5145"))
-	_ = mustDialWS(t, makeWebSocketURL(Server, "/casino/5145"))
+		client1 := mustDialWS(t, makeWebSocketURL(Server, "/casino/9999"))
+		client2 := mustDialWS(t, makeWebSocketURL(Server, "/casino/9999"))
+		client3 := mustDialWS(t, makeWebSocketURL(Server, "/casino/9999"))
+		defer client3.Close()
+		// 3 clients
+		assertNumberOfClient(t, 3, pool.NumberOfClients())
 
-	t.Run("register when client connect", func(t *testing.T) {
-		assertNumberOfClient(t, 3, hub.NumberOfClients())
-	})
-
-	t.Run("unregister when client connect", func(t *testing.T) {
 		client1.Close()
 		client2.Close()
 		waitForProcess()
-		assertNumberOfClient(t, 1, hub.NumberOfClients())
+		// 1 client
+		assertNumberOfClient(t, 1, pool.NumberOfClients())
 	})
 }
 
