@@ -106,6 +106,8 @@ func (s *Server) handleMessage(msg []byte, c *client.Client) {
 		uid, _ := strconv.ParseUint(result.Data.User.UserID, 10, 0)
 		c.UserID = uint32(uid)
 
+		dummyGameCode := uint16(0)
+		_, _ = s.api.Call("casino.slot.line243.BuBuGaoSheng", "machineOccupy", c.UserID, c.HallID, dummyGameCode)
 		c.WriteMsg(client.Response(client.LoginResponse, []byte(`{"event":"login"}`)))
 		c.WriteMsg(client.Response(client.TakeMachineResponse, []byte(`{"event":"TakeMachine"}`)))
 	case client.OnLoadInfo:

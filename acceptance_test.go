@@ -250,7 +250,10 @@ func TestGameHandler(t *testing.T) {
 	})
 
 	t.Run("call casino api", func(t *testing.T) {
-		spyCaller := &SpyCaller{}
+		spyCaller := &SpyCaller{
+			response: map[string][]byte{
+				"loginCheck": []byte(`{"event":true, "data":{"user": {"UserID": "100", "HallID":"6"}}}`),
+			}}
 		server := httptest.NewServer(gode.NewServer(gode.NewHub(), spyCaller))
 		wsClient := mustDialWS(t, makeWebSocketURL(server, "/casino/5145"))
 		defer server.Close()
@@ -259,20 +262,20 @@ func TestGameHandler(t *testing.T) {
 		writeBinaryMsg(t, wsClient, `{"action":"loginBySid","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
 
 		waitForProcess()
-		//uid := 100
-		//hid := 6
-		//gameCode := 50
+		uid := uint32(100)
+		hid := uint32(6)
+		gameCode := uint16(0)
 		expectedHistory := apiHistory{
 			{
 				service:    "Client",
 				function:   "loginCheck",
 				parameters: []interface{}{"21d9b36e42c8275a4359f6815b859df05ec2bb0a"},
 			},
-			//{
-			//	service:    "casino.slot.line243.BuBuGaoSheng",
-			//	function:   "machineOccupy",
-			//	parameters: []interface{}{uid, hid, gameCode},
-			//},
+			{
+				service:    "casino.slot.line243.BuBuGaoSheng",
+				function:   "machineOccupy",
+				parameters: []interface{}{uid, hid, gameCode},
+			},
 		}
 
 		if !reflect.DeepEqual(expectedHistory, spyCaller.history) {
