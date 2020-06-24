@@ -33,29 +33,28 @@ func NewServer(clients ClientPool, caller casinoapi.Caller) (s *Server) {
 }
 
 func (s *Server) gameHandler(w http.ResponseWriter, r *http.Request) {
-	ws, err := newWSServer(w, r)
+	c := &client.Client{}
+	err := c.ServeWS(w, r)
 	if err != nil {
 		return
 	}
 
 	// make sure every connection will get different client
 	gameType, _ := s.parseGameType(r)
-	c := &client.Client{
-		GameType: gameType,
-	}
+	c.GameType = gameType
 	_ = s.clients.Register(c)
 
-	ws.writeBinaryMsg(client.Response(client.ReadyResponse, []byte(`null`)))
+	c.WriteBinaryMsg(client.Response(client.ReadyResponse, []byte(`null`)))
 
 	// keep listen and handle ws messages
 	wsMsg := make(chan []byte)
-	go ws.listenJSON(wsMsg)
+	go c.ListenJSON(wsMsg)
 	for {
 		closed := false
 		select {
 		case msg, ok := <-wsMsg:
 			if ok {
-				s.handleMessage(ws, msg, c)
+				s.handleMessage(msg, c)
 			} else {
 				//s.handleDisconnect()
 				s.clients.Unregister(c)
@@ -95,7 +94,7 @@ type LoginCheckResult struct {
 	} `json:"data"`
 }
 
-func (s *Server) handleMessage(ws *wsServer, msg []byte, c *client.Client) {
+func (s *Server) handleMessage(msg []byte, c *client.Client) {
 	data := client.ParseData(msg)
 	switch data.Action {
 	case client.Login:
@@ -107,18 +106,18 @@ func (s *Server) handleMessage(ws *wsServer, msg []byte, c *client.Client) {
 		uid, _ := strconv.ParseUint(result.Data.User.UserID, 10, 0)
 		c.UserID = uint32(uid)
 
-		ws.writeBinaryMsg(client.Response(client.LoginResponse, []byte(`{"event":"login"}`)))
-		ws.writeBinaryMsg(client.Response(client.TakeMachineResponse, []byte(`{"event":"TakeMachine"}`)))
+		c.WriteBinaryMsg(client.Response(client.LoginResponse, []byte(`{"event":"login"}`)))
+		c.WriteBinaryMsg(client.Response(client.TakeMachineResponse, []byte(`{"event":"TakeMachine"}`)))
 	case client.OnLoadInfo:
-		ws.writeBinaryMsg(client.Response(client.OnLoadInfoResponse, []byte(`{"event":"LoadInfo"}`)))
+		c.WriteBinaryMsg(client.Response(client.OnLoadInfoResponse, []byte(`{"event":"LoadInfo"}`)))
 	case client.GetMachineDetail:
-		ws.writeBinaryMsg(client.Response(client.GetMachineDetailResponse, []byte(`{"event":"MachineDetail"}`)))
+		c.WriteBinaryMsg(client.Response(client.GetMachineDetailResponse, []byte(`{"event":"MachineDetail"}`)))
 	case client.BeginGame:
 		s.api.Call("5145", "beginGame")
-		ws.writeBinaryMsg(client.Response(client.BeginGameResponse, []byte(`{"event":"BeginGame"}`)))
+		c.WriteBinaryMsg(client.Response(client.BeginGameResponse, []byte(`{"event":"BeginGame"}`)))
 	case client.ExchangeCredit:
-		ws.writeBinaryMsg(client.Response(client.ExchangeCreditResponse, []byte(`{"event":"CreditExchange"}`)))
+		c.WriteBinaryMsg(client.Response(client.ExchangeCreditResponse, []byte(`{"event":"CreditExchange"}`)))
 	case client.ExchangeBalance:
-		ws.writeBinaryMsg(client.Response(client.ExchangeBalanceResponse, []byte(`{"event":"BalanceExchange"}`)))
+		c.WriteBinaryMsg(client.Response(client.ExchangeBalanceResponse, []byte(`{"event":"BalanceExchange"}`)))
 	}
 }
