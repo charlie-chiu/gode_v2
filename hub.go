@@ -9,6 +9,7 @@ import (
 const MaxClients = 100
 
 type ClientPool interface {
+	NumberOfClients() int
 	Register(*client.Client) error
 	Unregister(*client.Client)
 }

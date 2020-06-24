@@ -37,6 +37,10 @@ type SpyHub struct {
 	clients []*client.Client
 }
 
+func (h *SpyHub) NumberOfClients() int {
+	return len(h.clients)
+}
+
 func (h *SpyHub) Register(c *client.Client) error {
 	h.clients = append(h.clients, c)
 

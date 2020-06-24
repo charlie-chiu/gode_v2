@@ -19,8 +19,8 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func TestClientPool(t *testing.T) {
-	t.Run("register client on connect and unregister on disconnect", func(t *testing.T) {
+func TestClient(t *testing.T) {
+	t.Run("register on connect and unregister on disconnect", func(t *testing.T) {
 		pool := gode.NewHub()
 		Server := httptest.NewServer(gode.NewServer(pool, &SpyCaller{}))
 		defer Server.Close()
