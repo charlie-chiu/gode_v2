@@ -25,20 +25,20 @@ func TestClient(t *testing.T) {
 		Server := httptest.NewServer(gode.NewServer(pool, &SpyCaller{}))
 		defer Server.Close()
 
-		// no client
+		// no player
 		assertNumberOfClient(t, 0, pool.NumberOfClients())
 
-		client1 := mustDialWS(t, makeWebSocketURL(Server, "/casino/9999"))
-		client2 := mustDialWS(t, makeWebSocketURL(Server, "/casino/9999"))
-		client3 := mustDialWS(t, makeWebSocketURL(Server, "/casino/9999"))
-		defer client3.Close()
-		// 3 clients
+		player1 := mustDialWS(t, makeWebSocketURL(Server, "/casino/9999"))
+		player2 := mustDialWS(t, makeWebSocketURL(Server, "/casino/9999"))
+		player3 := mustDialWS(t, makeWebSocketURL(Server, "/casino/9999"))
+		defer player3.Close()
+		// 3 players
 		assertNumberOfClient(t, 3, pool.NumberOfClients())
 
-		client1.Close()
-		client2.Close()
+		player1.Close()
+		player2.Close()
 		waitForProcess()
-		// 1 client
+		// 1 player
 		assertNumberOfClient(t, 1, pool.NumberOfClients())
 	})
 
@@ -100,11 +100,11 @@ func TestRouter(t *testing.T) {
 	t.Run("/casino/5145 call 5145 api", func(t *testing.T) {
 		caller := &SpyCaller{}
 		server := httptest.NewServer(gode.NewServer(gode.NewHub(), caller))
-		client := mustDialWS(t, makeWebSocketURL(server, "/casino/5145"))
+		player := mustDialWS(t, makeWebSocketURL(server, "/casino/5145"))
 		defer server.Close()
-		defer client.Close()
+		defer player.Close()
 
-		writeBinaryMsg(t, client, `{"action":"beginGame4"}`)
+		writeBinaryMsg(t, player, `{"action":"beginGame4"}`)
 		waitForProcess()
 
 		want := "5145"
@@ -140,102 +140,132 @@ func TestGameHandler(t *testing.T) {
 	t.Run("not response when send incorrect data", func(t *testing.T) {
 		caller := &SpyCaller{}
 		server := httptest.NewServer(gode.NewServer(gode.NewHub(), caller))
-		client := mustDialWS(t, makeWebSocketURL(server, "/casino/5145"))
+		player := mustDialWS(t, makeWebSocketURL(server, "/casino/5145"))
 		defer server.Close()
-		defer client.Close()
+		defer player.Close()
 
-		within(t, timeout, func() {
-			assertReceiveBinaryMsg(t, client, `{"action":"ready","result":null}`)
+		assertWithin(t, timeout, func() {
+			assertReceiveBinaryMsg(t, player, `{"action":"ready","result":null}`)
 		})
 
-		writeBinaryMsg(t, client, `ola ola ola`)
-		assertNoResponseWithin(t, timeout, client)
+		writeBinaryMsg(t, player, `ola ola ola`)
+		assertNoResponseWithin(t, timeout, player)
 	})
 
 	t.Run("not response when send incorrect action", func(t *testing.T) {
 		caller := &SpyCaller{}
 		server := httptest.NewServer(gode.NewServer(gode.NewHub(), caller))
-		client := mustDialWS(t, makeWebSocketURL(server, "/casino/5145"))
+		player := mustDialWS(t, makeWebSocketURL(server, "/casino/5145"))
 		defer server.Close()
-		defer client.Close()
+		defer player.Close()
 
-		within(t, timeout, func() {
-			assertReceiveBinaryMsg(t, client, `{"action":"ready","result":null}`)
+		assertWithin(t, timeout, func() {
+			assertReceiveBinaryMsg(t, player, `{"action":"ready","result":null}`)
 		})
 
-		writeBinaryMsg(t, client, `{"action": "hello"}`)
-		assertNoResponseWithin(t, timeout, client)
+		writeBinaryMsg(t, player, `{"action": "hello"}`)
+		assertNoResponseWithin(t, timeout, player)
 	})
 
 	t.Run("response ws message", func(t *testing.T) {
 		caller := &SpyCaller{}
 		server := httptest.NewServer(gode.NewServer(gode.NewHub(), caller))
-		client := mustDialWS(t, makeWebSocketURL(server, "/casino/5145"))
+		player := mustDialWS(t, makeWebSocketURL(server, "/casino/5145"))
 		defer server.Close()
-		defer client.Close()
+		defer player.Close()
 
-		within(t, timeout, func() {
+		assertWithin(t, timeout, func() {
 			//ready
-			assertReceiveBinaryMsg(t, client, `{"action":"ready","result":null}`)
+			assertReceiveBinaryMsg(t, player, `{"action":"ready","result":null}`)
 
 			//ClientLogin
-			writeBinaryMsg(t, client, `{"action":"loginBySid","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
-			assertReceiveBinaryMsg(t, client, `{"action":"onLogin","result":{"event":"login"}}`)
-			assertReceiveBinaryMsg(t, client, `{"action":"onTakeMachine","result":{"event":"TakeMachine"}}`)
+			writeBinaryMsg(t, player, `{"action":"loginBySid","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
+			assertReceiveBinaryMsg(t, player, `{"action":"onLogin","result":{"event":"login"}}`)
+			assertReceiveBinaryMsg(t, player, `{"action":"onTakeMachine","result":{"event":"TakeMachine"}}`)
 
 			//ClientOnLoadInfo
-			writeBinaryMsg(t, client, `{"action":"onLoadInfo2","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
-			assertReceiveBinaryMsg(t, client, `{"action":"onOnLoadInfo2","result":{"event":"LoadInfo"}}`)
+			writeBinaryMsg(t, player, `{"action":"onLoadInfo2","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
+			assertReceiveBinaryMsg(t, player, `{"action":"onOnLoadInfo2","result":{"event":"LoadInfo"}}`)
 
 			//ClientGetMachineDetail
-			writeBinaryMsg(t, client, `{"action":"getMachineDetail","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
-			assertReceiveBinaryMsg(t, client, `{"action":"onGetMachineDetail","result":{"event":"MachineDetail"}}`)
+			writeBinaryMsg(t, player, `{"action":"getMachineDetail","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
+			assertReceiveBinaryMsg(t, player, `{"action":"onGetMachineDetail","result":{"event":"MachineDetail"}}`)
 
 			//開分
-			writeBinaryMsg(t, client, `{"action":"creditExchange"}`)
-			assertReceiveBinaryMsg(t, client, `{"action":"onCreditExchange","result":{"event":"CreditExchange"}}`)
+			writeBinaryMsg(t, player, `{"action":"creditExchange"}`)
+			assertReceiveBinaryMsg(t, player, `{"action":"onCreditExchange","result":{"event":"CreditExchange"}}`)
 
 			//begin game
-			writeBinaryMsg(t, client, `{"action":"beginGame4"}`)
-			assertReceiveBinaryMsg(t, client, `{"action":"onBeginGame","result":{"event":"BeginGame"}}`)
+			writeBinaryMsg(t, player, `{"action":"beginGame4"}`)
+			assertReceiveBinaryMsg(t, player, `{"action":"onBeginGame","result":{"event":"BeginGame"}}`)
 
 			//洗分
-			writeBinaryMsg(t, client, `{"action":"balanceExchange"}`)
-			assertReceiveBinaryMsg(t, client, `{"action":"onBalanceExchange","result":{"event":"BalanceExchange"}}`)
+			writeBinaryMsg(t, player, `{"action":"balanceExchange"}`)
+			assertReceiveBinaryMsg(t, player, `{"action":"onBalanceExchange","result":{"event":"BalanceExchange"}}`)
 		})
 	})
+}
 
-	t.Run("call casino api", func(t *testing.T) {
-		spyCaller := &SpyCaller{
-			response: map[string][]byte{
-				"loginCheck": []byte(`{"event":true, "data":{"user": {"UserID": "100", "HallID":"6"}}}`),
-			}}
-		server := httptest.NewServer(gode.NewServer(gode.NewHub(), spyCaller))
-		wsClient := mustDialWS(t, makeWebSocketURL(server, "/casino/5145"))
-		defer server.Close()
-		defer wsClient.Close()
+func TestProcess(t *testing.T) {
+	const timeout = 50 * time.Millisecond
 
-		writeBinaryMsg(t, wsClient, `{"action":"loginBySid","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
+	// arrange casino api response
+	spyCaller := &SpyCaller{
+		response: map[string][]byte{
+			"loginCheck": []byte(`{"event":true, "data":{"user": {"UserID": "100", "HallID":"6"}}}`),
+		}}
+	server := httptest.NewServer(gode.NewServer(gode.NewHub(), spyCaller))
+	player := mustDialWS(t, makeWebSocketURL(server, "/casino/5145"))
+	defer server.Close()
+	defer player.Close()
 
-		waitForProcess()
-		uid := uint32(100)
-		hid := uint32(6)
-		gameCode := uint16(0)
-		expectedHistory := apiHistory{
-			{
-				service:    "Client",
-				function:   "loginCheck",
-				parameters: []interface{}{"21d9b36e42c8275a4359f6815b859df05ec2bb0a"},
-			},
-			{
-				service:    "casino.slot.line243.BuBuGaoSheng",
-				function:   "machineOccupy",
-				parameters: []interface{}{uid, hid, gameCode},
-			},
-		}
+	// response to player
+	assertWithin(t, timeout, func() {
+		//ready
+		assertReceiveBinaryMsg(t, player, `{"action":"ready","result":null}`)
 
-		if !reflect.DeepEqual(expectedHistory, spyCaller.history) {
-			t.Errorf("api history not equal,\nwant:%+v\n got:%+v", expectedHistory, spyCaller.history)
-		}
+		//ClientLogin
+		writeBinaryMsg(t, player, `{"action":"loginBySid","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
+		assertReceiveBinaryMsg(t, player, `{"action":"onLogin","result":{"event":"login"}}`)
+		assertReceiveBinaryMsg(t, player, `{"action":"onTakeMachine","result":{"event":"TakeMachine"}}`)
+
+		//ClientOnLoadInfo
+		writeBinaryMsg(t, player, `{"action":"onLoadInfo2","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
+		assertReceiveBinaryMsg(t, player, `{"action":"onOnLoadInfo2","result":{"event":"LoadInfo"}}`)
 	})
+
+	waitForProcess()
+
+	// call api with correct parameter
+	uid := uint32(100)
+	hid := uint32(6)
+	gameCode := uint16(0)
+	expectedHistory := apiHistory{
+		{
+			service:    "Client",
+			function:   "loginCheck",
+			parameters: []interface{}{"21d9b36e42c8275a4359f6815b859df05ec2bb0a"},
+		},
+		{
+			service:    "casino.slot.line243.BuBuGaoSheng",
+			function:   "machineOccupy",
+			parameters: []interface{}{uid, hid, gameCode},
+		},
+		//{
+		//	service:    "casino.slot.line243.BuBuGaoSheng",
+		//	function:   "onLoadInfo",
+		//	parameters: []interface{}{uid, gameCode},
+		//},
+	}
+
+	for i, expectedLog := range expectedHistory {
+		if len(spyCaller.history) <= i {
+			t.Fatalf("history %d not exists, want\n%+v\n", i, expectedLog)
+		}
+		gotLog := spyCaller.history[i]
+
+		if !reflect.DeepEqual(gotLog, expectedLog) {
+			t.Errorf("%dth api log not equal,\nwant:%+v\n got:%+v", i+1, expectedLog, gotLog)
+		}
+	}
 }

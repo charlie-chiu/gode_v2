@@ -72,7 +72,7 @@ func writeBinaryMsg(t *testing.T, wsClient *websocket.Conn, msg string) {
 	}
 }
 
-func within(t *testing.T, d time.Duration, assert func()) {
+func assertWithin(t *testing.T, d time.Duration, assert func()) {
 	t.Helper()
 
 	done := make(chan struct{}, 1)
