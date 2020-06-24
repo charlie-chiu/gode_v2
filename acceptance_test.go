@@ -97,23 +97,6 @@ func TestRouter(t *testing.T) {
 		assertResponseCode(t, recorder.Code, http.StatusBadRequest)
 	})
 
-	t.Run("/casino/5145 call 5145 api", func(t *testing.T) {
-		caller := &SpyCaller{}
-		server := httptest.NewServer(gode.NewServer(gode.NewHub(), caller))
-		player := mustDialWS(t, makeWebSocketURL(server, "/casino/5145"))
-		defer server.Close()
-		defer player.Close()
-
-		writeBinaryMsg(t, player, `{"action":"beginGame4"}`)
-		waitForProcess()
-
-		want := "5145"
-		got := caller.history[0].service
-		if got != want {
-			t.Errorf("called service wrong, want %q, got %q", want, got)
-		}
-	})
-
 	t.Run("/casino/{gameType} store game type in client", func(t *testing.T) {
 		caller := &SpyCaller{}
 		spyHub := &SpyHub{}
@@ -135,7 +118,7 @@ func TestRouter(t *testing.T) {
 }
 
 func TestGameHandler(t *testing.T) {
-	const timeout = 500 * time.Millisecond
+	const timeout = 10 * time.Millisecond
 
 	t.Run("not response when send incorrect data", func(t *testing.T) {
 		caller := &SpyCaller{}
@@ -207,7 +190,7 @@ func TestGameHandler(t *testing.T) {
 }
 
 func TestProcess(t *testing.T) {
-	const timeout = 50 * time.Millisecond
+	const timeout = 10 * time.Millisecond
 
 	// arrange casino api response
 	spyCaller := &SpyCaller{
@@ -232,6 +215,22 @@ func TestProcess(t *testing.T) {
 		//ClientOnLoadInfo
 		writeBinaryMsg(t, player, `{"action":"onLoadInfo2","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
 		assertReceiveBinaryMsg(t, player, `{"action":"onOnLoadInfo2","result":{"event":"LoadInfo"}}`)
+
+		//ClientGetMachineDetail
+		writeBinaryMsg(t, player, `{"action":"getMachineDetail","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
+		assertReceiveBinaryMsg(t, player, `{"action":"onGetMachineDetail","result":{"event":"MachineDetail"}}`)
+
+		//開分
+		writeBinaryMsg(t, player, `{"action":"creditExchange"}`)
+		assertReceiveBinaryMsg(t, player, `{"action":"onCreditExchange","result":{"event":"CreditExchange"}}`)
+
+		//begin game
+		writeBinaryMsg(t, player, `{"action":"beginGame4"}`)
+		assertReceiveBinaryMsg(t, player, `{"action":"onBeginGame","result":{"event":"BeginGame"}}`)
+
+		//洗分
+		writeBinaryMsg(t, player, `{"action":"balanceExchange"}`)
+		assertReceiveBinaryMsg(t, player, `{"action":"onBalanceExchange","result":{"event":"BalanceExchange"}}`)
 	})
 
 	waitForProcess()
@@ -240,20 +239,43 @@ func TestProcess(t *testing.T) {
 	uid := uint32(100)
 	hid := uint32(6)
 	gameCode := uint16(0)
+	sid := "21d9b36e42c8275a4359f6815b859df05ec2bb0a"
+	//betBase := "1:1"
+	//exchangeCredit := 1000
 	expectedHistory := apiHistory{
 		{
 			service:    "Client",
 			function:   "loginCheck",
-			parameters: []interface{}{"21d9b36e42c8275a4359f6815b859df05ec2bb0a"},
+			parameters: []interface{}{sid},
 		},
 		{
 			service:    "casino.slot.line243.BuBuGaoSheng",
 			function:   "machineOccupy",
 			parameters: []interface{}{uid, hid, gameCode},
 		},
+		{
+			service:    "casino.slot.line243.BuBuGaoSheng",
+			function:   "onLoadInfo",
+			parameters: []interface{}{uid, gameCode},
+		},
+		{
+			service:    "casino.slot.line243.BuBuGaoSheng",
+			function:   "getMachineDetail",
+			parameters: []interface{}{uid, gameCode},
+		},
 		//{
 		//	service:    "casino.slot.line243.BuBuGaoSheng",
-		//	function:   "onLoadInfo",
+		//	function:   "creditExchange",
+		//	parameters: []interface{}{sid, gameCode, betBase, exchangeCredit},
+		//},
+		//{
+		//	service:    "casino.slot.line243.BuBuGaoSheng",
+		//	function:   "beginGame",
+		//	parameters: []interface{}{uid, gameCode},
+		//},
+		//{
+		//	service:    "casino.slot.line243.BuBuGaoSheng",
+		//	function:   "balanceExchange",
 		//	parameters: []interface{}{uid, gameCode},
 		//},
 	}

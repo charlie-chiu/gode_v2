@@ -95,6 +95,7 @@ type LoginCheckResult struct {
 }
 
 func (s *Server) handleMessage(msg []byte, c *client.Client) {
+	dummyGameCode := uint16(0)
 	data := client.ParseData(msg)
 	switch data.Action {
 	case client.Login:
@@ -106,16 +107,19 @@ func (s *Server) handleMessage(msg []byte, c *client.Client) {
 		uid, _ := strconv.ParseUint(result.Data.User.UserID, 10, 0)
 		c.UserID = uint32(uid)
 
-		dummyGameCode := uint16(0)
 		_, _ = s.api.Call("casino.slot.line243.BuBuGaoSheng", "machineOccupy", c.UserID, c.HallID, dummyGameCode)
 		c.WriteMsg(client.Response(client.LoginResponse, []byte(`{"event":"login"}`)))
 		c.WriteMsg(client.Response(client.TakeMachineResponse, []byte(`{"event":"TakeMachine"}`)))
 	case client.OnLoadInfo:
+		_, _ = s.api.Call("casino.slot.line243.BuBuGaoSheng", "onLoadInfo", c.UserID, dummyGameCode)
 		c.WriteMsg(client.Response(client.OnLoadInfoResponse, []byte(`{"event":"LoadInfo"}`)))
+
 	case client.GetMachineDetail:
+		_, _ = s.api.Call("casino.slot.line243.BuBuGaoSheng", "getMachineDetail", c.UserID, dummyGameCode)
 		c.WriteMsg(client.Response(client.GetMachineDetailResponse, []byte(`{"event":"MachineDetail"}`)))
+
 	case client.BeginGame:
-		s.api.Call("5145", "beginGame")
+		s.api.Call("casino.slot.line243.BuBuGaoSheng", "beginGame")
 		c.WriteMsg(client.Response(client.BeginGameResponse, []byte(`{"event":"BeginGame"}`)))
 	case client.ExchangeCredit:
 		c.WriteMsg(client.Response(client.ExchangeCreditResponse, []byte(`{"event":"CreditExchange"}`)))
