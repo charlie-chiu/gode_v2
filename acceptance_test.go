@@ -241,8 +241,8 @@ func TestProcess(t *testing.T) {
 	hid := uint32(6)
 	gameCode := uint16(0)
 	sid := "21d9b36e42c8275a4359f6815b859df05ec2bb0a"
-	//betBase := "1:1"
-	//exchangeCredit := 1000
+	betBase := "1:1"
+	exchangeCredit := "50000"
 	expectedHistory := apiHistory{
 		{
 			service:    "Client",
@@ -264,11 +264,11 @@ func TestProcess(t *testing.T) {
 			function:   "getMachineDetail",
 			parameters: []interface{}{uid, gameCode},
 		},
-		//{
-		//	service:    "casino.slot.line243.BuBuGaoSheng",
-		//	function:   "creditExchange",
-		//	parameters: []interface{}{sid, gameCode, betBase, exchangeCredit},
-		//},
+		{
+			service:    "casino.slot.line243.BuBuGaoSheng",
+			function:   "creditExchange",
+			parameters: []interface{}{sid, gameCode, betBase, exchangeCredit},
+		},
 		//{
 		//	service:    "casino.slot.line243.BuBuGaoSheng",
 		//	function:   "beginGame",
