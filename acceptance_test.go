@@ -288,7 +288,7 @@ func TestProcess(t *testing.T) {
 		gotLog := spyCaller.history[i]
 
 		if !reflect.DeepEqual(gotLog, expectedLog) {
-			t.Errorf("%dth api log not equal,\nwant:%+v\n got:%+v", i+1, expectedLog, gotLog)
+			t.Errorf("%dth api log not equal,\nwant:%v\n got:%v", i+1, expectedLog, gotLog)
 		}
 	}
 }

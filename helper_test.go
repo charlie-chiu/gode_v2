@@ -1,6 +1,7 @@
 package gode_test
 
 import (
+	"fmt"
 	"net/http/httptest"
 	"strings"
 	"testing"
@@ -31,6 +32,20 @@ type apiLog struct {
 	service    string
 	function   string
 	parameters []interface{}
+}
+
+func (l apiLog) String() string {
+	b := strings.Builder{}
+
+	b.WriteString(fmt.Sprintf("%v %v [", l.service, l.function))
+
+	for _, parameter := range l.parameters {
+		b.WriteString(fmt.Sprintf("(%T)%v ", parameter, parameter))
+	}
+
+	b.WriteString("]")
+
+	return b.String()
 }
 
 type SpyHub struct {
