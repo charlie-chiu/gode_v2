@@ -39,11 +39,11 @@ type apiLog struct {
 }
 
 type SpyHub struct {
-	clients []client.Client
+	clients []*client.Client
 }
 
-func (h *SpyHub) Register(client *client.Client) error {
-	h.clients = append(h.clients, *client)
+func (h *SpyHub) Register(c *client.Client) error {
+	h.clients = append(h.clients, c)
 
 	return nil
 }
@@ -77,6 +77,34 @@ func TestClientPool(t *testing.T) {
 		waitForProcess()
 		// 1 client
 		assertNumberOfClient(t, 1, pool.NumberOfClients())
+	})
+
+	t.Run("store userID and hallID after loginBySID called", func(t *testing.T) {
+		spyCaller := &SpyCaller{
+			response: map[string][]byte{
+				"loginCheck": []byte(`{"event":true, "data":{"user": {"UserID": "1325", "HallID":"0"}}}`),
+			},
+		}
+		spyHub := &SpyHub{}
+		server := httptest.NewServer(gode.NewServer(spyHub, spyCaller))
+		wsClient := mustDialWS(t, makeWebSocketURL(server, "/casino/5888"))
+		defer server.Close()
+		defer wsClient.Close()
+		writeBinaryMsg(t, wsClient, `{"action":"loginBySid","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
+
+		waitForProcess()
+
+		want := client.Client{
+			GameType: 5888,
+			UserID:   1325,
+			HallID:   0,
+		}
+		got := *spyHub.clients[0]
+
+		// assert client equal
+		if !reflect.DeepEqual(want, got) {
+			t.Errorf("client not equal, \nwant: %+v\n got: %+v\n", want, got)
+		}
 	})
 }
 
