@@ -44,7 +44,7 @@ func (s *Server) gameHandler(w http.ResponseWriter, r *http.Request) {
 	c.GameType = gameType
 	_ = s.clients.Register(c)
 
-	c.WriteBinaryMsg(client.Response(client.ReadyResponse, []byte(`null`)))
+	c.WriteMsg(client.Response(client.ReadyResponse, []byte(`null`)))
 
 	// keep listen and handle ws messages
 	wsMsg := make(chan []byte)
@@ -106,18 +106,18 @@ func (s *Server) handleMessage(msg []byte, c *client.Client) {
 		uid, _ := strconv.ParseUint(result.Data.User.UserID, 10, 0)
 		c.UserID = uint32(uid)
 
-		c.WriteBinaryMsg(client.Response(client.LoginResponse, []byte(`{"event":"login"}`)))
-		c.WriteBinaryMsg(client.Response(client.TakeMachineResponse, []byte(`{"event":"TakeMachine"}`)))
+		c.WriteMsg(client.Response(client.LoginResponse, []byte(`{"event":"login"}`)))
+		c.WriteMsg(client.Response(client.TakeMachineResponse, []byte(`{"event":"TakeMachine"}`)))
 	case client.OnLoadInfo:
-		c.WriteBinaryMsg(client.Response(client.OnLoadInfoResponse, []byte(`{"event":"LoadInfo"}`)))
+		c.WriteMsg(client.Response(client.OnLoadInfoResponse, []byte(`{"event":"LoadInfo"}`)))
 	case client.GetMachineDetail:
-		c.WriteBinaryMsg(client.Response(client.GetMachineDetailResponse, []byte(`{"event":"MachineDetail"}`)))
+		c.WriteMsg(client.Response(client.GetMachineDetailResponse, []byte(`{"event":"MachineDetail"}`)))
 	case client.BeginGame:
 		s.api.Call("5145", "beginGame")
-		c.WriteBinaryMsg(client.Response(client.BeginGameResponse, []byte(`{"event":"BeginGame"}`)))
+		c.WriteMsg(client.Response(client.BeginGameResponse, []byte(`{"event":"BeginGame"}`)))
 	case client.ExchangeCredit:
-		c.WriteBinaryMsg(client.Response(client.ExchangeCreditResponse, []byte(`{"event":"CreditExchange"}`)))
+		c.WriteMsg(client.Response(client.ExchangeCreditResponse, []byte(`{"event":"CreditExchange"}`)))
 	case client.ExchangeBalance:
-		c.WriteBinaryMsg(client.Response(client.ExchangeBalanceResponse, []byte(`{"event":"BalanceExchange"}`)))
+		c.WriteMsg(client.Response(client.ExchangeBalanceResponse, []byte(`{"event":"BalanceExchange"}`)))
 	}
 }

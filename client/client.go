@@ -8,6 +8,8 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+const messageType = websocket.BinaryMessage
+
 var wsUpgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
@@ -76,8 +78,8 @@ func (c *Client) ListenJSON(wsMsg chan []byte) {
 	}
 }
 
-func (c *Client) WriteBinaryMsg(msg []byte) {
-	err := c.WSConn.WriteMessage(websocket.BinaryMessage, msg)
+func (c *Client) WriteMsg(msg []byte) {
+	err := c.WSConn.WriteMessage(messageType, msg)
 	if err != nil {
 		log.Println("Write Error: ", err)
 	}
