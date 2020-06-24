@@ -19,9 +19,10 @@ var wsUpgrader = websocket.Upgrader{
 }
 
 type Client struct {
-	GameType uint16
-	UserID   uint32
-	HallID   uint32
+	GameType  uint16
+	UserID    uint32
+	HallID    uint32
+	SessionID string
 
 	WSConn *websocket.Conn
 }

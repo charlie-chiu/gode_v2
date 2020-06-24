@@ -45,7 +45,7 @@ func TestClient(t *testing.T) {
 	t.Run("store userID and hallID after loginBySID called", func(t *testing.T) {
 		spyCaller := &SpyCaller{
 			response: map[string][]byte{
-				"loginCheck": []byte(`{"event":true, "data":{"user": {"UserID": "1325", "HallID":"0"}}}`),
+				"loginCheck": []byte(`{"event":true, "data":{"user": {"UserID": "1325", "HallID":"0"}, "Session":{"Session":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}}}`),
 			},
 		}
 		spyHub := &SpyHub{}
@@ -58,9 +58,10 @@ func TestClient(t *testing.T) {
 		waitForProcess()
 
 		want := client.Client{
-			GameType: 5888,
-			UserID:   1325,
-			HallID:   0,
+			GameType:  5888,
+			UserID:    1325,
+			HallID:    0,
+			SessionID: "21d9b36e42c8275a4359f6815b859df05ec2bb0a",
 		}
 		got := *spyHub.clients[0]
 
@@ -195,7 +196,7 @@ func TestProcess(t *testing.T) {
 	// arrange casino api response
 	spyCaller := &SpyCaller{
 		response: map[string][]byte{
-			"loginCheck": []byte(`{"event":true, "data":{"user": {"UserID": "100", "HallID":"6"}}}`),
+			"loginCheck": []byte(`{"event":true, "data":{"user": {"UserID": "100", "HallID":"6"}, "Session":{"Session":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}}}`),
 		}}
 	server := httptest.NewServer(gode.NewServer(gode.NewHub(), spyCaller))
 	player := mustDialWS(t, makeWebSocketURL(server, "/casino/5145"))
@@ -221,7 +222,7 @@ func TestProcess(t *testing.T) {
 		assertReceiveBinaryMsg(t, player, `{"action":"onGetMachineDetail","result":{"event":"MachineDetail"}}`)
 
 		//開分
-		writeBinaryMsg(t, player, `{"action":"creditExchange"}`)
+		writeBinaryMsg(t, player, `{"action":"creditExchange","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a","rate":"1:1","credit":"50000"}`)
 		assertReceiveBinaryMsg(t, player, `{"action":"onCreditExchange","result":{"event":"CreditExchange"}}`)
 
 		//begin game

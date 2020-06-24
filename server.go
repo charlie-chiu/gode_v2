@@ -106,6 +106,7 @@ func (s *Server) handleMessage(msg []byte, c *client.Client) {
 		c.HallID = uint32(hid)
 		uid, _ := strconv.ParseUint(result.Data.User.UserID, 10, 0)
 		c.UserID = uint32(uid)
+		c.SessionID = result.Data.Session.Session
 
 		_, _ = s.api.Call("casino.slot.line243.BuBuGaoSheng", "machineOccupy", c.UserID, c.HallID, dummyGameCode)
 		c.WriteMsg(client.Response(client.LoginResponse, []byte(`{"event":"login"}`)))
@@ -119,7 +120,6 @@ func (s *Server) handleMessage(msg []byte, c *client.Client) {
 		c.WriteMsg(client.Response(client.GetMachineDetailResponse, []byte(`{"event":"MachineDetail"}`)))
 
 	case client.BeginGame:
-		s.api.Call("casino.slot.line243.BuBuGaoSheng", "beginGame")
 		c.WriteMsg(client.Response(client.BeginGameResponse, []byte(`{"event":"BeginGame"}`)))
 	case client.ExchangeCredit:
 		c.WriteMsg(client.Response(client.ExchangeCreditResponse, []byte(`{"event":"CreditExchange"}`)))
