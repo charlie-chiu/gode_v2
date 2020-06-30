@@ -1,6 +1,7 @@
 package gode_test
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -226,7 +227,7 @@ func TestProcess(t *testing.T) {
 		assertReceiveBinaryMsg(t, player, `{"action":"onCreditExchange","result":{"event":"CreditExchange"}}`)
 
 		//begin game
-		writeBinaryMsg(t, player, `{"action":"beginGame4"}`)
+		writeBinaryMsg(t, player, `{"action":"beginGame4","sid":"123","betInfo":{"BetLevel":5}}`)
 		assertReceiveBinaryMsg(t, player, `{"action":"onBeginGame","result":{"event":"BeginGame"}}`)
 
 		//洗分
@@ -243,6 +244,7 @@ func TestProcess(t *testing.T) {
 	sid := "21d9b36e42c8275a4359f6815b859df05ec2bb0a"
 	betBase := "1:1"
 	exchangeCredit := "50000"
+	betInfo := json.RawMessage(`{"BetLevel":5}`)
 	expectedHistory := apiHistory{
 		{
 			service:    "Client",
@@ -269,11 +271,11 @@ func TestProcess(t *testing.T) {
 			function:   "creditExchange",
 			parameters: []interface{}{sid, gameCode, betBase, exchangeCredit},
 		},
-		//{
-		//	service:    "casino.slot.line243.BuBuGaoSheng",
-		//	function:   "beginGame",
-		//	parameters: []interface{}{uid, gameCode},
-		//},
+		{
+			service:    "casino.slot.line243.BuBuGaoSheng",
+			function:   "beginGame",
+			parameters: []interface{}{sid, betInfo},
+		},
 		//{
 		//	service:    "casino.slot.line243.BuBuGaoSheng",
 		//	function:   "balanceExchange",

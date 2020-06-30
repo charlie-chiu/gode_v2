@@ -3,11 +3,11 @@ package client
 import "encoding/json"
 
 type WSData struct {
-	Action    string `json:"action"`
-	SessionID string `json:"sid"`
-	BetBase   string `json:"rate"`
-	Credit    string `json:"credit"`
-	BetInfo   string `json:"betInfo"`
+	Action    string          `json:"action"`
+	SessionID string          `json:"sid"`
+	BetBase   string          `json:"rate"`
+	Credit    string          `json:"credit"`
+	BetInfo   json.RawMessage `json:"betInfo"`
 }
 
 type WSResponse struct {
