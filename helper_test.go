@@ -110,6 +110,7 @@ func assertWithin(t *testing.T, d time.Duration, assert func()) {
 }
 
 func assertNoResponseWithin(t *testing.T, d time.Duration, client *websocket.Conn) {
+	t.Helper()
 	msgChan := make(chan []byte, 1)
 	go func() {
 		_, p, _ := client.ReadMessage()
@@ -120,7 +121,7 @@ func assertNoResponseWithin(t *testing.T, d time.Duration, client *websocket.Con
 	case <-time.After(d):
 		return
 	case msg := <-msgChan:
-		t.Errorf("shouldn't get response but got %q", msg)
+		t.Errorf("shouldn't get response but got %s", msg)
 	}
 }
 
