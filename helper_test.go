@@ -3,6 +3,7 @@ package gode_test
 import (
 	"fmt"
 	"net/http/httptest"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -154,5 +155,19 @@ func assertNumberOfClient(t *testing.T, wanted, got int) {
 	t.Helper()
 	if got != wanted {
 		t.Errorf("wanted number of clients %d, got, %d", wanted, got)
+	}
+}
+
+func assertLogEqual(t *testing.T, expectedHistory, wantedLog apiHistory) {
+	t.Helper()
+	for i, expectedLog := range expectedHistory {
+		if len(wantedLog) <= i {
+			t.Fatalf("history %d not exists, want\n%+v\n", i, expectedLog)
+		}
+		gotLog := wantedLog[i]
+
+		if !reflect.DeepEqual(gotLog, expectedLog) {
+			t.Errorf("%dth api log not equal,\nwant:%v\n got:%v", i+1, expectedLog, gotLog)
+		}
 	}
 }

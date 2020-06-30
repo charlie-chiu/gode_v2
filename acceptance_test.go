@@ -197,51 +197,13 @@ func TestGameHandler(t *testing.T) {
 
 func TestProcess(t *testing.T) {
 	const timeout = 10 * time.Millisecond
-	spyCaller := &SpyCaller{
-		response: map[string]apiResponse{
-			"loginCheck": apiResponse{
-				result: []byte(`{"event":true, "data":{"user": {"UserID": "100", "HallID":"6"}, "Session":{"Session":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}}}`),
-				err:    nil,
-			},
+
+	callerResponses := map[string]apiResponse{
+		"loginCheck": {
+			result: []byte(`{"event":true, "data":{"user": {"UserID": "100", "HallID":"6"}, "Session":{"Session":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}}}`),
+			err:    nil,
 		},
 	}
-	server := httptest.NewServer(gode.NewServer(gode.NewHub(), spyCaller))
-	player := mustDialWS(t, makeWebSocketURL(server, "/casino/5145"))
-	defer server.Close()
-	defer player.Close()
-
-	// response to player
-	assertWithin(t, timeout, func() {
-		//ready
-		assertReceiveBinaryMsg(t, player, `{"action":"ready","result":null}`)
-
-		//ClientLogin
-		writeBinaryMsg(t, player, `{"action":"loginBySid","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
-		assertReceiveBinaryMsg(t, player, `{"action":"onLogin","result":{"event":"login"}}`)
-		assertReceiveBinaryMsg(t, player, `{"action":"onTakeMachine","result":{"event":"TakeMachine"}}`)
-
-		//ClientOnLoadInfo
-		writeBinaryMsg(t, player, `{"action":"onLoadInfo2","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
-		assertReceiveBinaryMsg(t, player, `{"action":"onOnLoadInfo2","result":{"event":"LoadInfo"}}`)
-
-		//ClientGetMachineDetail
-		writeBinaryMsg(t, player, `{"action":"getMachineDetail","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
-		assertReceiveBinaryMsg(t, player, `{"action":"onGetMachineDetail","result":{"event":"MachineDetail"}}`)
-
-		//開分
-		writeBinaryMsg(t, player, `{"action":"creditExchange","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a","rate":"1:1","credit":"50000"}`)
-		assertReceiveBinaryMsg(t, player, `{"action":"onCreditExchange","result":{"event":"CreditExchange"}}`)
-
-		//begin game
-		writeBinaryMsg(t, player, `{"action":"beginGame4","sid":"123","betInfo":{"BetLevel":5}}`)
-		assertReceiveBinaryMsg(t, player, `{"action":"onBeginGame","result":{"event":"BeginGame"}}`)
-
-		//洗分
-		writeBinaryMsg(t, player, `{"action":"balanceExchange"}`)
-		assertReceiveBinaryMsg(t, player, `{"action":"onBalanceExchange","result":{"event":"BalanceExchange"}}`)
-	})
-
-	waitForProcess()
 
 	// call api with correct parameter
 	uid := uint32(100)
@@ -289,16 +251,46 @@ func TestProcess(t *testing.T) {
 		},
 	}
 
-	for i, expectedLog := range expectedHistory {
-		if len(spyCaller.history) <= i {
-			t.Fatalf("history %d not exists, want\n%+v\n", i, expectedLog)
-		}
-		gotLog := spyCaller.history[i]
+	spyCaller := &SpyCaller{response: callerResponses}
+	server := httptest.NewServer(gode.NewServer(gode.NewHub(), spyCaller))
+	player := mustDialWS(t, makeWebSocketURL(server, "/casino/5145"))
+	defer server.Close()
+	defer player.Close()
 
-		if !reflect.DeepEqual(gotLog, expectedLog) {
-			t.Errorf("%dth api log not equal,\nwant:%v\n got:%v", i+1, expectedLog, gotLog)
-		}
-	}
+	// response to player
+	assertWithin(t, timeout, func() {
+		//ready
+		assertReceiveBinaryMsg(t, player, `{"action":"ready","result":null}`)
+
+		//ClientLogin
+		writeBinaryMsg(t, player, `{"action":"loginBySid","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
+		assertReceiveBinaryMsg(t, player, `{"action":"onLogin","result":{"event":"login"}}`)
+		assertReceiveBinaryMsg(t, player, `{"action":"onTakeMachine","result":{"event":"TakeMachine"}}`)
+
+		//ClientOnLoadInfo
+		writeBinaryMsg(t, player, `{"action":"onLoadInfo2","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
+		assertReceiveBinaryMsg(t, player, `{"action":"onOnLoadInfo2","result":{"event":"LoadInfo"}}`)
+
+		//ClientGetMachineDetail
+		writeBinaryMsg(t, player, `{"action":"getMachineDetail","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
+		assertReceiveBinaryMsg(t, player, `{"action":"onGetMachineDetail","result":{"event":"MachineDetail"}}`)
+
+		//開分
+		writeBinaryMsg(t, player, `{"action":"creditExchange","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a","rate":"1:1","credit":"50000"}`)
+		assertReceiveBinaryMsg(t, player, `{"action":"onCreditExchange","result":{"event":"CreditExchange"}}`)
+
+		//begin game
+		writeBinaryMsg(t, player, `{"action":"beginGame4","sid":"123","betInfo":{"BetLevel":5}}`)
+		assertReceiveBinaryMsg(t, player, `{"action":"onBeginGame","result":{"event":"BeginGame"}}`)
+
+		//洗分
+		writeBinaryMsg(t, player, `{"action":"balanceExchange"}`)
+		assertReceiveBinaryMsg(t, player, `{"action":"onBalanceExchange","result":{"event":"BalanceExchange"}}`)
+	})
+
+	waitForProcess()
+
+	assertLogEqual(t, expectedHistory, spyCaller.history)
 }
 
 func TestCasinoAPIErrorHandling(t *testing.T) {
