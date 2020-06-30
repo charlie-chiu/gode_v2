@@ -155,44 +155,6 @@ func TestGameHandler(t *testing.T) {
 		writeBinaryMsg(t, player, `{"action": "hello"}`)
 		assertNoResponseWithin(t, timeout, player)
 	})
-
-	t.Run("response ws message", func(t *testing.T) {
-		caller := &SpyCaller{}
-		server := httptest.NewServer(gode.NewServer(gode.NewHub(), caller))
-		player := mustDialWS(t, makeWebSocketURL(server, "/casino/5145"))
-		defer server.Close()
-		defer player.Close()
-
-		assertWithin(t, timeout, func() {
-			//ready
-			assertReceiveBinaryMsg(t, player, `{"action":"ready","result":null}`)
-
-			//ClientLogin
-			writeBinaryMsg(t, player, `{"action":"loginBySid","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
-			assertReceiveBinaryMsg(t, player, `{"action":"onLogin","result":{"event":"login"}}`)
-			assertReceiveBinaryMsg(t, player, `{"action":"onTakeMachine","result":{"event":"TakeMachine"}}`)
-
-			//ClientOnLoadInfo
-			writeBinaryMsg(t, player, `{"action":"onLoadInfo2","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
-			assertReceiveBinaryMsg(t, player, `{"action":"onOnLoadInfo2","result":{"event":"LoadInfo"}}`)
-
-			//ClientGetMachineDetail
-			writeBinaryMsg(t, player, `{"action":"getMachineDetail","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
-			assertReceiveBinaryMsg(t, player, `{"action":"onGetMachineDetail","result":{"event":"MachineDetail"}}`)
-
-			//開分
-			writeBinaryMsg(t, player, `{"action":"creditExchange"}`)
-			assertReceiveBinaryMsg(t, player, `{"action":"onCreditExchange","result":{"event":"CreditExchange"}}`)
-
-			//begin game
-			writeBinaryMsg(t, player, `{"action":"beginGame4"}`)
-			assertReceiveBinaryMsg(t, player, `{"action":"onBeginGame","result":{"event":"BeginGame"}}`)
-
-			//洗分
-			writeBinaryMsg(t, player, `{"action":"balanceExchange"}`)
-			assertReceiveBinaryMsg(t, player, `{"action":"onBalanceExchange","result":{"event":"BalanceExchange"}}`)
-		})
-	})
 }
 
 func TestProcess(t *testing.T) {
