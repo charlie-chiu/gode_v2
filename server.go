@@ -99,45 +99,45 @@ func (s *Server) handleMessage(msg []byte, c *client.Client) {
 	data := client.ParseData(msg)
 	switch data.Action {
 	case client.Login:
-		apiResult, err := s.api.Call("Client", "loginCheck", data.SessionID)
+		loginCheckResult, err := s.api.Call("Client", "loginCheck", data.SessionID)
 		if err != nil {
 			return
 		}
 		result := &LoginCheckResult{}
-		_ = json.Unmarshal(apiResult, result)
+		_ = json.Unmarshal(loginCheckResult, result)
 		hid, _ := strconv.ParseUint(result.Data.User.HallID, 10, 0)
 		c.HallID = uint32(hid)
 		uid, _ := strconv.ParseUint(result.Data.User.UserID, 10, 0)
 		c.UserID = uint32(uid)
 		c.SessionID = result.Data.Session.Session
 
-		_, err = s.api.Call("casino.slot.line243.BuBuGaoSheng", "machineOccupy", c.UserID, c.HallID, dummyGameCode)
+		apiResult, err := s.api.Call("casino.slot.line243.BuBuGaoSheng", "machineOccupy", c.UserID, c.HallID, dummyGameCode)
 		if err != nil {
 			return
 		}
 		c.WriteMsg(client.Response(client.LoginResponse, []byte(`{"event":"login"}`)))
-		c.WriteMsg(client.Response(client.TakeMachineResponse, []byte(`{"event":"TakeMachine"}`)))
+		c.WriteMsg(client.Response(client.TakeMachineResponse, apiResult))
 	case client.OnLoadInfo:
-		_, _ = s.api.Call("casino.slot.line243.BuBuGaoSheng", "onLoadInfo", c.UserID, dummyGameCode)
-		c.WriteMsg(client.Response(client.OnLoadInfoResponse, []byte(`{"event":"LoadInfo"}`)))
+		apiResult, _ := s.api.Call("casino.slot.line243.BuBuGaoSheng", "onLoadInfo", c.UserID, dummyGameCode)
+		c.WriteMsg(client.Response(client.OnLoadInfoResponse, apiResult))
 
 	case client.GetMachineDetail:
-		_, _ = s.api.Call("casino.slot.line243.BuBuGaoSheng", "getMachineDetail", c.UserID, dummyGameCode)
-		c.WriteMsg(client.Response(client.GetMachineDetailResponse, []byte(`{"event":"MachineDetail"}`)))
+		apiResult, _ := s.api.Call("casino.slot.line243.BuBuGaoSheng", "getMachineDetail", c.UserID, dummyGameCode)
+		c.WriteMsg(client.Response(client.GetMachineDetailResponse, apiResult))
 
 	case client.BeginGame:
-		_, err := s.api.Call("casino.slot.line243.BuBuGaoSheng", "beginGame", c.SessionID, data.BetInfo)
+		apiResult, err := s.api.Call("casino.slot.line243.BuBuGaoSheng", "beginGame", c.SessionID, data.BetInfo)
 		if err != nil {
 			return
 		}
-		c.WriteMsg(client.Response(client.BeginGameResponse, []byte(`{"event":"BeginGame"}`)))
+		c.WriteMsg(client.Response(client.BeginGameResponse, apiResult))
 
 	case client.ExchangeCredit:
-		_, _ = s.api.Call("casino.slot.line243.BuBuGaoSheng", "creditExchange", c.SessionID, dummyGameCode, data.BetBase, data.Credit)
-		c.WriteMsg(client.Response(client.ExchangeCreditResponse, []byte(`{"event":"CreditExchange"}`)))
+		apiResult, _ := s.api.Call("casino.slot.line243.BuBuGaoSheng", "creditExchange", c.SessionID, dummyGameCode, data.BetBase, data.Credit)
+		c.WriteMsg(client.Response(client.ExchangeCreditResponse, apiResult))
 
 	case client.ExchangeBalance:
-		_, _ = s.api.Call("casino.slot.line243.BuBuGaoSheng", "balanceExchange", c.UserID, c.HallID, dummyGameCode)
-		c.WriteMsg(client.Response(client.ExchangeBalanceResponse, []byte(`{"event":"BalanceExchange"}`)))
+		apiResult, _ := s.api.Call("casino.slot.line243.BuBuGaoSheng", "balanceExchange", c.UserID, c.HallID, dummyGameCode)
+		c.WriteMsg(client.Response(client.ExchangeBalanceResponse, apiResult))
 	}
 }

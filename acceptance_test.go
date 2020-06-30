@@ -165,6 +165,30 @@ func TestProcess(t *testing.T) {
 			result: []byte(`{"event":true, "data":{"user": {"UserID": "100", "HallID":"6"}, "Session":{"Session":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}}}`),
 			err:    nil,
 		},
+		"machineOccupy": {
+			result: []byte(`{"testing":"machineOccupy"}`),
+			err:    nil,
+		},
+		"onLoadInfo": {
+			result: []byte(`{"testing":"onLoadInfo"}`),
+			err:    nil,
+		},
+		"getMachineDetail": {
+			result: []byte(`{"testing":"getMachineDetail"}`),
+			err:    nil,
+		},
+		"creditExchange": {
+			result: []byte(`{"testing":"CreditExchange"}`),
+			err:    nil,
+		},
+		"beginGame": {
+			result: []byte(`{"testing":"BeginGame"}`),
+			err:    nil,
+		},
+		"balanceExchange": {
+			result: []byte(`{"testing":"BalanceExchange"}`),
+			err:    nil,
+		},
 	}
 
 	// call api with correct parameter
@@ -227,27 +251,27 @@ func TestProcess(t *testing.T) {
 		//ClientLogin
 		writeBinaryMsg(t, player, `{"action":"loginBySid","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
 		assertReceiveBinaryMsg(t, player, `{"action":"onLogin","result":{"event":"login"}}`)
-		assertReceiveBinaryMsg(t, player, `{"action":"onTakeMachine","result":{"event":"TakeMachine"}}`)
+		assertReceiveBinaryMsg(t, player, `{"action":"onTakeMachine","result":{"testing":"machineOccupy"}}`)
 
 		//ClientOnLoadInfo
 		writeBinaryMsg(t, player, `{"action":"onLoadInfo2","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
-		assertReceiveBinaryMsg(t, player, `{"action":"onOnLoadInfo2","result":{"event":"LoadInfo"}}`)
+		assertReceiveBinaryMsg(t, player, `{"action":"onOnLoadInfo2","result":{"testing":"onLoadInfo"}}`)
 
 		//ClientGetMachineDetail
 		writeBinaryMsg(t, player, `{"action":"getMachineDetail","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
-		assertReceiveBinaryMsg(t, player, `{"action":"onGetMachineDetail","result":{"event":"MachineDetail"}}`)
+		assertReceiveBinaryMsg(t, player, `{"action":"onGetMachineDetail","result":{"testing":"getMachineDetail"}}`)
 
 		//開分
 		writeBinaryMsg(t, player, `{"action":"creditExchange","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a","rate":"1:1","credit":"50000"}`)
-		assertReceiveBinaryMsg(t, player, `{"action":"onCreditExchange","result":{"event":"CreditExchange"}}`)
+		assertReceiveBinaryMsg(t, player, `{"action":"onCreditExchange","result":{"testing":"CreditExchange"}}`)
 
 		//begin game
 		writeBinaryMsg(t, player, `{"action":"beginGame4","sid":"123","betInfo":{"BetLevel":5}}`)
-		assertReceiveBinaryMsg(t, player, `{"action":"onBeginGame","result":{"event":"BeginGame"}}`)
+		assertReceiveBinaryMsg(t, player, `{"action":"onBeginGame","result":{"testing":"BeginGame"}}`)
 
 		//洗分
 		writeBinaryMsg(t, player, `{"action":"balanceExchange"}`)
-		assertReceiveBinaryMsg(t, player, `{"action":"onBalanceExchange","result":{"event":"BalanceExchange"}}`)
+		assertReceiveBinaryMsg(t, player, `{"action":"onBalanceExchange","result":{"testing":"BalanceExchange"}}`)
 	})
 
 	waitForProcess()
