@@ -13,7 +13,7 @@ import (
 
 type SpyCaller struct {
 	history  apiHistory
-	response map[string][]byte
+	response map[string]apiResponse
 }
 
 func (c *SpyCaller) Call(service string, functionName string, parameters ...interface{}) ([]byte, error) {
@@ -23,7 +23,12 @@ func (c *SpyCaller) Call(service string, functionName string, parameters ...inte
 		parameters: parameters,
 	})
 
-	return c.response[functionName], nil
+	return c.response[functionName].result, c.response[functionName].err
+}
+
+type apiResponse struct {
+	result []byte
+	err    error
 }
 
 type apiHistory []apiLog

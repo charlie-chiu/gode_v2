@@ -45,8 +45,11 @@ func TestClient(t *testing.T) {
 
 	t.Run("store userID and hallID after loginBySID called", func(t *testing.T) {
 		spyCaller := &SpyCaller{
-			response: map[string][]byte{
-				"loginCheck": []byte(`{"event":true, "data":{"user": {"UserID": "1325", "HallID":"0"}, "Session":{"Session":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}}}`),
+			response: map[string]apiResponse{
+				"loginCheck": apiResponse{
+					result: []byte(`{"event":true, "data":{"user": {"UserID": "1325", "HallID":"0"}, "Session":{"Session":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}}}`),
+					err:    nil,
+				},
 			},
 		}
 		spyHub := &SpyHub{}
@@ -193,12 +196,14 @@ func TestGameHandler(t *testing.T) {
 
 func TestProcess(t *testing.T) {
 	const timeout = 10 * time.Millisecond
-
-	// arrange casino api response
 	spyCaller := &SpyCaller{
-		response: map[string][]byte{
-			"loginCheck": []byte(`{"event":true, "data":{"user": {"UserID": "100", "HallID":"6"}, "Session":{"Session":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}}}`),
-		}}
+		response: map[string]apiResponse{
+			"loginCheck": apiResponse{
+				result: []byte(`{"event":true, "data":{"user": {"UserID": "100", "HallID":"6"}, "Session":{"Session":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}}}`),
+				err:    nil,
+			},
+		},
+	}
 	server := httptest.NewServer(gode.NewServer(gode.NewHub(), spyCaller))
 	player := mustDialWS(t, makeWebSocketURL(server, "/casino/5145"))
 	defer server.Close()
