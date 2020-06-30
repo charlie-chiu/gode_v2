@@ -99,7 +99,10 @@ func (s *Server) handleMessage(msg []byte, c *client.Client) {
 	data := client.ParseData(msg)
 	switch data.Action {
 	case client.Login:
-		apiResult, _ := s.api.Call("Client", "loginCheck", data.SessionID)
+		apiResult, err := s.api.Call("Client", "loginCheck", data.SessionID)
+		if err != nil {
+			return
+		}
 		result := &LoginCheckResult{}
 		_ = json.Unmarshal(apiResult, result)
 		hid, _ := strconv.ParseUint(result.Data.User.HallID, 10, 0)
@@ -108,7 +111,10 @@ func (s *Server) handleMessage(msg []byte, c *client.Client) {
 		c.UserID = uint32(uid)
 		c.SessionID = result.Data.Session.Session
 
-		_, _ = s.api.Call("casino.slot.line243.BuBuGaoSheng", "machineOccupy", c.UserID, c.HallID, dummyGameCode)
+		_, err = s.api.Call("casino.slot.line243.BuBuGaoSheng", "machineOccupy", c.UserID, c.HallID, dummyGameCode)
+		if err != nil {
+			return
+		}
 		c.WriteMsg(client.Response(client.LoginResponse, []byte(`{"event":"login"}`)))
 		c.WriteMsg(client.Response(client.TakeMachineResponse, []byte(`{"event":"TakeMachine"}`)))
 	case client.OnLoadInfo:

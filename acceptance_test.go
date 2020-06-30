@@ -2,6 +2,7 @@ package gode_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -298,4 +299,52 @@ func TestProcess(t *testing.T) {
 			t.Errorf("%dth api log not equal,\nwant:%v\n got:%v", i+1, expectedLog, gotLog)
 		}
 	}
+}
+
+func TestCasinoAPIErrorHandling(t *testing.T) {
+	const timeout = 10 * time.Millisecond
+
+	t.Run("disconnect when loginCheck error", func(t *testing.T) {
+		caller := &SpyCaller{
+			response: map[string]apiResponse{
+				"loginCheck": {
+					result: []byte(``),
+					err:    fmt.Errorf("some api error"),
+				},
+			},
+		}
+		server := httptest.NewServer(gode.NewServer(gode.NewHub(), caller))
+		player := mustDialWS(t, makeWebSocketURL(server, "/casino/5145"))
+		defer server.Close()
+		defer player.Close()
+
+		assertWithin(t, timeout, func() {
+			assertReceiveBinaryMsg(t, player, `{"action":"ready","result":null}`)
+		})
+
+		writeBinaryMsg(t, player, `{"action":"loginBySid","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
+		assertNoResponseWithin(t, timeout, player)
+	})
+
+	t.Run("disconnect when machineOccupy error", func(t *testing.T) {
+		caller := &SpyCaller{
+			response: map[string]apiResponse{
+				"machineOccupy": {
+					result: []byte(``),
+					err:    fmt.Errorf("some api error"),
+				},
+			},
+		}
+		server := httptest.NewServer(gode.NewServer(gode.NewHub(), caller))
+		player := mustDialWS(t, makeWebSocketURL(server, "/casino/5145"))
+		defer server.Close()
+		defer player.Close()
+
+		assertWithin(t, timeout, func() {
+			assertReceiveBinaryMsg(t, player, `{"action":"ready","result":null}`)
+		})
+
+		writeBinaryMsg(t, player, `{"action":"loginBySid","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
+		assertNoResponseWithin(t, timeout, player)
+	})
 }
