@@ -347,4 +347,26 @@ func TestCasinoAPIErrorHandling(t *testing.T) {
 		writeBinaryMsg(t, player, `{"action":"loginBySid","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
 		assertNoResponseWithin(t, timeout, player)
 	})
+
+	t.Run("disconnect when beginGame error", func(t *testing.T) {
+		caller := &SpyCaller{
+			response: map[string]apiResponse{
+				"beginGame": {
+					result: []byte(``),
+					err:    fmt.Errorf("some api error"),
+				},
+			},
+		}
+		server := httptest.NewServer(gode.NewServer(gode.NewHub(), caller))
+		player := mustDialWS(t, makeWebSocketURL(server, "/casino/5145"))
+		defer server.Close()
+		defer player.Close()
+
+		assertWithin(t, timeout, func() {
+			assertReceiveBinaryMsg(t, player, `{"action":"ready","result":null}`)
+		})
+
+		writeBinaryMsg(t, player, `{"action":"beginGame4","sid":"123","betInfo":{"BetLevel":5}}`)
+		assertNoResponseWithin(t, timeout, player)
+	})
 }
