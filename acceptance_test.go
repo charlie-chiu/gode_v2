@@ -276,11 +276,11 @@ func TestProcess(t *testing.T) {
 			function:   "beginGame",
 			parameters: []interface{}{sid, betInfo},
 		},
-		//{
-		//	service:    "casino.slot.line243.BuBuGaoSheng",
-		//	function:   "balanceExchange",
-		//	parameters: []interface{}{uid, gameCode},
-		//},
+		{
+			service:    "casino.slot.line243.BuBuGaoSheng",
+			function:   "balanceExchange",
+			parameters: []interface{}{uid, hid, gameCode},
+		},
 	}
 
 	for i, expectedLog := range expectedHistory {

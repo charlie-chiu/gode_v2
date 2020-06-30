@@ -128,6 +128,7 @@ func (s *Server) handleMessage(msg []byte, c *client.Client) {
 		c.WriteMsg(client.Response(client.ExchangeCreditResponse, []byte(`{"event":"CreditExchange"}`)))
 
 	case client.ExchangeBalance:
+		_, _ = s.api.Call("casino.slot.line243.BuBuGaoSheng", "balanceExchange", c.UserID, c.HallID, dummyGameCode)
 		c.WriteMsg(client.Response(client.ExchangeBalanceResponse, []byte(`{"event":"BalanceExchange"}`)))
 	}
 }
