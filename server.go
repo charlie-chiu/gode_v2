@@ -59,19 +59,13 @@ func (s *Server) gameHandler(w http.ResponseWriter, r *http.Request) {
 	wsMsg := make(chan []byte)
 	go c.ListenJSON(wsMsg)
 	for {
-		closed := false
-		select {
-		case msg, ok := <-wsMsg:
-			if ok {
-				s.handleMessage(msg, c)
-			} else {
-				_, _ = s.api.Call(c.GameType, "balanceExchange", c.UserID, c.HallID, dummyGameCode)
-				_, _ = s.api.Call(c.GameType, "machineLeave", c.UserID, c.HallID, dummyGameCode)
-				s.clients.Unregister(c)
-				closed = true
-			}
-		}
-		if closed {
+		msg, ok := <-wsMsg
+		if ok {
+			s.handleMessage(msg, c)
+		} else {
+			_, _ = s.api.Call(c.GameType, "balanceExchange", c.UserID, c.HallID, dummyGameCode)
+			_, _ = s.api.Call(c.GameType, "machineLeave", c.UserID, c.HallID, dummyGameCode)
+			s.clients.Unregister(c)
 			break
 		}
 	}
