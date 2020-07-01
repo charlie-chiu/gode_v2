@@ -34,6 +34,12 @@ func NewServer(clients ClientPool, caller casinoapi.Caller) (s *Server) {
 }
 
 func (s *Server) gameHandler(w http.ResponseWriter, r *http.Request) {
+	gameType, _ := s.parseGameType(r)
+	if gameType < 5000 || gameType > 5999 {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
 	c := &client.Client{}
 	err := c.ServeWS(w, r)
 	if err != nil {

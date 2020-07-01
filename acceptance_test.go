@@ -30,9 +30,9 @@ func TestClient(t *testing.T) {
 		// no player
 		assertNumberOfClient(t, 0, pool.NumberOfClients())
 
-		player1 := mustDialWS(t, makeWebSocketURL(Server, "/casino/9999"))
-		player2 := mustDialWS(t, makeWebSocketURL(Server, "/casino/9999"))
-		player3 := mustDialWS(t, makeWebSocketURL(Server, "/casino/9999"))
+		player1 := mustDialWS(t, makeWebSocketURL(Server, "/casino/5100"))
+		player2 := mustDialWS(t, makeWebSocketURL(Server, "/casino/5200"))
+		player3 := mustDialWS(t, makeWebSocketURL(Server, "/casino/5300"))
 		defer player3.Close()
 		// 3 players
 		assertNumberOfClient(t, 3, pool.NumberOfClients())
@@ -111,6 +111,26 @@ func TestHandleClientException(t *testing.T) {
 
 		server.ServeHTTP(recorder, request)
 
+		assertResponseCode(t, recorder.Code, http.StatusNotFound)
+	})
+
+	t.Run("get 404 not found when game type out of range", func(t *testing.T) {
+		caller := &SpyCaller{}
+		server := gode.NewServer(gode.NewHub(), caller)
+
+		request, _ := http.NewRequest(http.MethodGet, "/casino/6666", nil)
+		recorder := httptest.NewRecorder()
+		server.ServeHTTP(recorder, request)
+		assertResponseCode(t, recorder.Code, http.StatusNotFound)
+	})
+
+	t.Run("get 404 not found when game type out of range", func(t *testing.T) {
+		caller := &SpyCaller{}
+		server := gode.NewServer(gode.NewHub(), caller)
+
+		request, _ := http.NewRequest(http.MethodGet, "/casino/4999", nil)
+		recorder := httptest.NewRecorder()
+		server.ServeHTTP(recorder, request)
 		assertResponseCode(t, recorder.Code, http.StatusNotFound)
 	})
 
