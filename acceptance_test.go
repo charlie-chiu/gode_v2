@@ -1,7 +1,6 @@
 package gode_test
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -232,8 +231,8 @@ func TestGameHandler(t *testing.T) {
 		gameCode := types.GameCode(0)
 		sid := types.SessionID(`21d9b36e42c8275a4359f6815b859df05ec2bb0a`)
 		betBase := "1:1"
-		exchangeCredit := "50000"
-		betInfo := json.RawMessage(`{"BetLevel":5}`)
+		exchangeCredit := types.Credit(50000)
+		betInfo := types.BetInfo(`{"BetLevel":5}`)
 		expectedHistory := apiHistory{
 			{
 				service:    "Client",

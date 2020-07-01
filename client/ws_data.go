@@ -10,8 +10,8 @@ type WSData struct {
 	Action    string          `json:"action"`
 	SessionID types.SessionID `json:"sid"`
 	BetBase   string          `json:"rate"`
-	Credit    string          `json:"credit"`
-	BetInfo   json.RawMessage `json:"betInfo"`
+	Credit    types.Credit    `json:"credit"`
+	BetInfo   types.BetInfo   `json:"betInfo"`
 }
 
 type WSResponse struct {

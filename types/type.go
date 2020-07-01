@@ -2,6 +2,7 @@ package types
 
 import (
 	"bytes"
+	"strconv"
 )
 
 /*
@@ -28,5 +29,31 @@ func (s SessionID) String() string {
 func (s *SessionID) UnmarshalJSON(b []byte) error {
 	*s = bytes.Trim(b, `"`)
 
+	return nil
+}
+
+type BetInfo []byte
+
+//todo: using pointer receiver instead
+func (i BetInfo) String() string {
+	return string(i)
+}
+
+func (i *BetInfo) UnmarshalJSON(b []byte) error {
+	*i = bytes.Trim(b, `"`)
+
+	return nil
+}
+
+type Credit uint32
+
+func (c *Credit) UnmarshalJSON(b []byte) error {
+	b = bytes.Trim(b, `"`)
+	credit, err := strconv.ParseUint(string(b), 10, 0)
+	if err != nil {
+		return err
+	}
+
+	*c = Credit(credit)
 	return nil
 }
