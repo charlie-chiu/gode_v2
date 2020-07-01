@@ -18,21 +18,19 @@ type GameCode uint16
 type HallID uint16
 
 func (i *HallID) UnmarshalJSON(b []byte) error {
-	b = bytes.Trim(b, `"`)
-	uid, err := strconv.ParseUint(string(b), 10, 0)
+	hid, err := trimToUint(b)
 	if err != nil {
 		return err
 	}
 
-	*i = HallID(uid)
+	*i = HallID(hid)
 	return nil
 }
 
 type UserID uint32
 
 func (u *UserID) UnmarshalJSON(b []byte) error {
-	b = bytes.Trim(b, `"`)
-	uid, err := strconv.ParseUint(string(b), 10, 0)
+	uid, err := trimToUint(b)
 	if err != nil {
 		return err
 	}
@@ -68,12 +66,20 @@ func (i *BetInfo) UnmarshalJSON(b []byte) error {
 type Credit uint32
 
 func (c *Credit) UnmarshalJSON(b []byte) error {
-	b = bytes.Trim(b, `"`)
-	credit, err := strconv.ParseUint(string(b), 10, 0)
+	credit, err := trimToUint(b)
 	if err != nil {
 		return err
 	}
 
 	*c = Credit(credit)
 	return nil
+}
+
+func trimToUint(b []byte) (uint64, error) {
+	b = bytes.Trim(b, `"`)
+	uid, err := strconv.ParseUint(string(b), 10, 0)
+	if err != nil {
+		return 0, err
+	}
+	return uid, nil
 }
