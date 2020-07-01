@@ -11,7 +11,51 @@ import (
 )
 
 func TestFlash2db_Call(t *testing.T) {
-	t.Run("get correct url and return", func(t *testing.T) {
+	const dummyGameType = types.GameType(9999)
+	const dummyFunction = "dummyFunc"
+
+	t.Run("get client service url when function is loginCheck", func(t *testing.T) {
+		function := "loginCheck"
+		APIResult := `{"testing": "loginCheck"}`
+
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			want := fmt.Sprintf("%s/%s.%s", urlPrefix, "Client", function)
+			assertURLEqual(t, r.URL.Path, want)
+
+			_, _ = fmt.Fprint(w, APIResult)
+		}))
+
+		f := NewFlash2db(server.URL)
+		gotResult, _ := f.Call(dummyGameType, function)
+
+		if bytes.Compare([]byte(APIResult), gotResult) != 0 {
+			t.Errorf("want %s, got %s", APIResult, gotResult)
+		}
+	})
+
+	t.Run("get game service url without params and return", func(t *testing.T) {
+		gt := types.GameType(5156)
+		service := "casino.slot.crash.ZumaEmpire"
+		function := "beginGame"
+		APIResult := `{"event": true}`
+
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			want := fmt.Sprintf("%s/%s.%s", urlPrefix, service, function)
+			assertURLEqual(t, r.URL.Path, want)
+
+			_, _ = fmt.Fprint(w, APIResult)
+		}))
+
+		f := NewFlash2db(server.URL)
+		gotResult, _ := f.Call(gt, function)
+
+		if bytes.Compare([]byte(APIResult), gotResult) != 0 {
+			t.Errorf("want %s, got %s", APIResult, gotResult)
+		}
+	})
+
+	t.Run("get game service url with params and return", func(t *testing.T) {
+		gt := types.GameType(5145)
 		service := "casino.slot.line243.BuBuGaoSheng"
 		function := "beginGame"
 		sid := types.SessionID(`19870604xi`)
@@ -29,16 +73,27 @@ func TestFlash2db_Call(t *testing.T) {
 		}))
 
 		f := NewFlash2db(server.URL)
-		gotResult, _ := f.Call(service, function, sid, uid, betInfo, credit)
+		gotResult, _ := f.Call(gt, function, sid, uid, betInfo, credit)
 
 		if bytes.Compare([]byte(APIResult), gotResult) != 0 {
 			t.Errorf("want %s, got %s", APIResult, gotResult)
 		}
 	})
 
+	t.Run("returns error when game type not exists", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
+
+		f := NewFlash2db(server.URL)
+		_, err := f.Call(9999, dummyFunction)
+
+		if err == nil {
+			t.Errorf("expected an error but not got one")
+		}
+	})
+
 	t.Run("returns error when connect failed", func(t *testing.T) {
 		f := NewFlash2db("http://not.exists")
-		_, err := f.Call("dummyServer", "dummyFunc", "dummyParam")
+		_, err := f.Call(dummyGameType, dummyFunction, "dummyParam")
 
 		if err == nil {
 			t.Errorf("expected an error but not got one")
@@ -52,7 +107,7 @@ func TestFlash2db_Call(t *testing.T) {
 		}))
 
 		f := NewFlash2db(server.URL)
-		_, err := f.Call("dummyServer", "dummyFunc", "dummyParam")
+		_, err := f.Call(dummyGameType, dummyFunction, "dummyParam")
 
 		if err == nil {
 			t.Errorf("expected an error but not got one")
@@ -66,7 +121,7 @@ func TestFlash2db_Call(t *testing.T) {
 		}))
 
 		f := NewFlash2db(server.URL)
-		_, err := f.Call("dummyServer", "dummyFunc", "dummyParam")
+		_, err := f.Call(dummyGameType, dummyFunction, "dummyParam")
 
 		if err == nil {
 			t.Errorf("expected an error but not got one")
