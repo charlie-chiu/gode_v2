@@ -98,27 +98,26 @@ type LoginCheckResult struct {
 func (s *Server) handleMessage(msg []byte, c *client.Client) {
 	dummyGameCode := types.GameCode(0)
 	data := client.ParseData(msg)
+
 	switch data.Action {
 	case client.Login:
 		loginCheckResult, err := s.api.Call("Client", "loginCheck", data.SessionID)
 		if err != nil {
 			return
 		}
-		result := &LoginCheckResult{}
-		err = json.Unmarshal(loginCheckResult, result)
-		if err != nil {
+
+		if err := storeLoginResult(loginCheckResult, c); err != nil {
 			return
 		}
-		c.HallID = result.Data.User.HallID
-		c.UserID = result.Data.User.UserID
-		c.SessionID = result.Data.Session.Session
 
 		apiResult, err := s.api.Call("casino.slot.line243.BuBuGaoSheng", "machineOccupy", c.UserID, c.HallID, dummyGameCode)
 		if err != nil {
 			return
 		}
+
 		c.WriteMsg(client.Response(client.LoginResponse, []byte(`{"event":"login"}`)))
 		c.WriteMsg(client.Response(client.TakeMachineResponse, apiResult))
+
 	case client.OnLoadInfo:
 		apiResult, _ := s.api.Call("casino.slot.line243.BuBuGaoSheng", "onLoadInfo", c.UserID, dummyGameCode)
 		c.WriteMsg(client.Response(client.OnLoadInfoResponse, apiResult))
@@ -142,4 +141,17 @@ func (s *Server) handleMessage(msg []byte, c *client.Client) {
 		apiResult, _ := s.api.Call("casino.slot.line243.BuBuGaoSheng", "balanceExchange", c.UserID, c.HallID, dummyGameCode)
 		c.WriteMsg(client.Response(client.ExchangeBalanceResponse, apiResult))
 	}
+}
+
+func storeLoginResult(loginCheckResult []byte, c *client.Client) error {
+	result := &LoginCheckResult{}
+	err := json.Unmarshal(loginCheckResult, result)
+	if err != nil {
+		return err
+	}
+	c.HallID = result.Data.User.HallID
+	c.UserID = result.Data.User.UserID
+	c.SessionID = result.Data.Session.Session
+
+	return nil
 }
