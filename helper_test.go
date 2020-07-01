@@ -18,14 +18,14 @@ type SpyCaller struct {
 	response map[string]apiResponse
 }
 
-func (c *SpyCaller) Call(service types.GameType, functionName string, parameters ...interface{}) ([]byte, error) {
+func (c *SpyCaller) Call(service types.GameType, function string, parameters ...interface{}) ([]byte, error) {
 	c.history = append(c.history, apiLog{
 		service:    service,
-		function:   functionName,
+		function:   function,
 		parameters: parameters,
 	})
 
-	return c.response[functionName].result, c.response[functionName].err
+	return c.response[function].result, c.response[function].err
 }
 
 type apiResponse struct {

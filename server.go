@@ -48,6 +48,7 @@ func (s *Server) gameHandler(w http.ResponseWriter, r *http.Request) {
 
 	// make sure every connection will get different client
 	c.GameType = gameType
+	// only return an error when reach client limit
 	_ = s.clients.Register(c)
 
 	c.WriteMsg(client.Response(client.ReadyResponse, []byte(`null`)))
