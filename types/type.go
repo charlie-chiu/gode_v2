@@ -17,11 +17,32 @@ type GameCode uint16
 
 type HallID uint16
 
+func (i *HallID) UnmarshalJSON(b []byte) error {
+	b = bytes.Trim(b, `"`)
+	uid, err := strconv.ParseUint(string(b), 10, 0)
+	if err != nil {
+		return err
+	}
+
+	*i = HallID(uid)
+	return nil
+}
+
 type UserID uint32
+
+func (u *UserID) UnmarshalJSON(b []byte) error {
+	b = bytes.Trim(b, `"`)
+	uid, err := strconv.ParseUint(string(b), 10, 0)
+	if err != nil {
+		return err
+	}
+
+	*u = UserID(uid)
+	return nil
+}
 
 type SessionID []byte
 
-//todo: using pointer receiver instead
 func (s SessionID) String() string {
 	return string(s)
 }
@@ -34,7 +55,6 @@ func (s *SessionID) UnmarshalJSON(b []byte) error {
 
 type BetInfo []byte
 
-//todo: using pointer receiver instead
 func (i BetInfo) String() string {
 	return string(i)
 }

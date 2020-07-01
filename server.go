@@ -79,18 +79,18 @@ type LoginCheckResult struct {
 	Event bool `json:"event"`
 	Data  struct {
 		Session struct {
-			Session  string `json:"session"`
-			CreateAt string `json:"create_at"`
+			Session  types.SessionID `json:"session"`
+			CreateAt string          `json:"create_at"`
 		} `json:"session"`
 		User struct {
-			UserID       string `json:"UserID"`
-			Username     string `json:"Username"`
-			LoginName    string `json:"LoginName"`
-			Currency     string `json:"Currency"`
-			Cash         string `json:"Cash"`
-			HallID       string `json:"HallID"`
-			ExchangeRate string `json:"ExchangeRate"`
-			Test         string `json:"Test"`
+			UserID       types.UserID `json:"UserID"`
+			Username     string       `json:"Username"`
+			LoginName    string       `json:"LoginName"`
+			Currency     string       `json:"Currency"`
+			Cash         string       `json:"Cash"`
+			HallID       types.HallID `json:"HallID"`
+			ExchangeRate string       `json:"ExchangeRate"`
+			Test         string       `json:"Test"`
 		} `json:"user"`
 	} `json:"data"`
 }
@@ -106,11 +106,9 @@ func (s *Server) handleMessage(msg []byte, c *client.Client) {
 		}
 		result := &LoginCheckResult{}
 		_ = json.Unmarshal(loginCheckResult, result)
-		hid, _ := strconv.ParseUint(result.Data.User.HallID, 10, 0)
-		c.HallID = types.HallID(hid)
-		uid, _ := strconv.ParseUint(result.Data.User.UserID, 10, 0)
-		c.UserID = types.UserID(uid)
-		c.SessionID = types.SessionID(result.Data.Session.Session)
+		c.HallID = result.Data.User.HallID
+		c.UserID = result.Data.User.UserID
+		c.SessionID = result.Data.Session.Session
 
 		apiResult, err := s.api.Call("casino.slot.line243.BuBuGaoSheng", "machineOccupy", c.UserID, c.HallID, dummyGameCode)
 		if err != nil {
