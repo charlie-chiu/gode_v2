@@ -279,6 +279,28 @@ func TestGameHandler(t *testing.T) {
 func TestHandleCasinoAPIException(t *testing.T) {
 	const timeout = 10 * time.Millisecond
 
+	t.Run("disconnect when loginCheck return invalid result", func(t *testing.T) {
+		caller := &SpyCaller{
+			response: map[string]apiResponse{
+				"loginCheck": {
+					result: []byte(`oops`),
+					err:    nil,
+				},
+			},
+		}
+		server := httptest.NewServer(gode.NewServer(gode.NewHub(), caller))
+		player := mustDialWS(t, makeWebSocketURL(server, "/casino/5145"))
+		defer server.Close()
+		defer player.Close()
+
+		assertWithin(t, timeout, func() {
+			assertReceiveBinaryMsg(t, player, `{"action":"ready","result":null}`)
+		})
+
+		writeBinaryMsg(t, player, `{"action":"loginBySid","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
+		assertNoResponseWithin(t, timeout, player)
+	})
+
 	t.Run("disconnect when loginCheck error", func(t *testing.T) {
 		caller := &SpyCaller{
 			response: map[string]apiResponse{

@@ -105,7 +105,10 @@ func (s *Server) handleMessage(msg []byte, c *client.Client) {
 			return
 		}
 		result := &LoginCheckResult{}
-		_ = json.Unmarshal(loginCheckResult, result)
+		err = json.Unmarshal(loginCheckResult, result)
+		if err != nil {
+			return
+		}
 		c.HallID = result.Data.User.HallID
 		c.UserID = result.Data.User.UserID
 		c.SessionID = result.Data.Session.Session
