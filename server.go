@@ -135,7 +135,7 @@ func (s *Server) handleMessage(msg []byte, c *client.Client) {
 		c.WriteMsg(client.Response(client.GetMachineDetailResponse, apiResult))
 
 	case client.BeginGame:
-		apiResult, err := s.api.Call(c.GameType, "beginGame", c.SessionID, data.BetInfo)
+		apiResult, err := s.api.Call(c.GameType, "beginGame", c.SessionID, dummyGameCode, data.BetInfo)
 		if err != nil {
 			return
 		}

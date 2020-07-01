@@ -345,7 +345,7 @@ func TestGameHandler(t *testing.T) {
 			{
 				service:    gameType,
 				function:   "beginGame",
-				parameters: []interface{}{sid, betInfo},
+				parameters: []interface{}{sid, gameCode, betInfo},
 			},
 			{
 				service:    gameType,
