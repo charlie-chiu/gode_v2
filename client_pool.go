@@ -14,19 +14,19 @@ type ClientPool interface {
 	Unregister(*client.Client)
 }
 
-type Hub struct {
+type ClientHub struct {
 	// Registered clients.
 	clients map[*client.Client]bool
 }
 
-func NewHub() *Hub {
-	return &Hub{
+func NewClientHub() *ClientHub {
+	return &ClientHub{
 		//register: make(chan *Client),
 		clients: make(map[*client.Client]bool),
 	}
 }
 
-func (h *Hub) Register(client *client.Client) (err error) {
+func (h *ClientHub) Register(client *client.Client) (err error) {
 	if len(h.clients) < MaxClients {
 		h.clients[client] = true
 	} else {
@@ -37,13 +37,13 @@ func (h *Hub) Register(client *client.Client) (err error) {
 	return
 }
 
-func (h *Hub) Unregister(client *client.Client) {
+func (h *ClientHub) Unregister(client *client.Client) {
 	if _, ok := h.clients[client]; ok {
 		delete(h.clients, client)
 		//log.Printf("client deleted from hub, now have %d clients\n", len(clients.clients))
 	}
 }
 
-func (h *Hub) NumberOfClients() int {
+func (h *ClientHub) NumberOfClients() int {
 	return len(h.clients)
 }

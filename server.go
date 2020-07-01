@@ -78,26 +78,6 @@ func (s *Server) parseGameType(r *http.Request) (gameType types.GameType, err er
 	return types.GameType(gameTypeUint64), err
 }
 
-type LoginCheckResult struct {
-	Event bool `json:"event"`
-	Data  struct {
-		Session struct {
-			Session  types.SessionID `json:"session"`
-			CreateAt string          `json:"create_at"`
-		} `json:"session"`
-		User struct {
-			UserID       types.UserID `json:"UserID"`
-			Username     string       `json:"Username"`
-			LoginName    string       `json:"LoginName"`
-			Currency     string       `json:"Currency"`
-			Cash         string       `json:"Cash"`
-			HallID       types.HallID `json:"HallID"`
-			ExchangeRate string       `json:"ExchangeRate"`
-			Test         string       `json:"Test"`
-		} `json:"user"`
-	} `json:"data"`
-}
-
 func (s *Server) handleMessage(msg []byte, c *client.Client) {
 	data := client.ParseData(msg)
 
@@ -143,6 +123,26 @@ func (s *Server) handleMessage(msg []byte, c *client.Client) {
 		apiResult, _ := s.api.Call(c.GameType, casinoapi.BalanceExchange, c.UserID, c.HallID, dummyGameCode)
 		c.WriteMsg(client.Response(client.ExchangeBalanceResponse, apiResult))
 	}
+}
+
+type LoginCheckResult struct {
+	Event bool `json:"event"`
+	Data  struct {
+		Session struct {
+			Session  types.SessionID `json:"session"`
+			CreateAt string          `json:"create_at"`
+		} `json:"session"`
+		User struct {
+			UserID       types.UserID `json:"UserID"`
+			Username     string       `json:"Username"`
+			LoginName    string       `json:"LoginName"`
+			Currency     string       `json:"Currency"`
+			Cash         string       `json:"Cash"`
+			HallID       types.HallID `json:"HallID"`
+			ExchangeRate string       `json:"ExchangeRate"`
+			Test         string       `json:"Test"`
+		} `json:"user"`
+	} `json:"data"`
 }
 
 func storeLoginResult(loginCheckResult []byte, c *client.Client) error {

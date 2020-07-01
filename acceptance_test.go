@@ -15,6 +15,7 @@ import (
 	"gode/types"
 )
 
+// set up testing
 func TestMain(m *testing.M) {
 	log.SetFlags(log.Lshortfile)
 
@@ -23,7 +24,7 @@ func TestMain(m *testing.M) {
 
 func TestClient(t *testing.T) {
 	t.Run("register on connect and unregister on disconnect", func(t *testing.T) {
-		pool := gode.NewHub()
+		pool := gode.NewClientHub()
 		Server := httptest.NewServer(gode.NewServer(pool, &SpyCaller{}))
 		defer Server.Close()
 
@@ -48,7 +49,7 @@ func TestClient(t *testing.T) {
 		spyCaller := &SpyCaller{
 			response: map[string]apiResponse{
 				"loginCheck": apiResponse{
-					result: []byte(`{"event":true, "data":{"user": {"UserID": "1325", "HallID":"0"}, "Session":{"Session":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}}}`),
+					result: []byte(`{"event":true, "data":{"user": {"UserID": "1325", "HallID":"10"}, "Session":{"Session":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}}}`),
 					err:    nil,
 				},
 			},
@@ -65,7 +66,7 @@ func TestClient(t *testing.T) {
 		want := client.Client{
 			GameType:  5888,
 			UserID:    1325,
-			HallID:    0,
+			HallID:    10,
 			SessionID: types.SessionID("21d9b36e42c8275a4359f6815b859df05ec2bb0a"),
 		}
 		got := *spyHub.clients[0]
@@ -104,7 +105,7 @@ func TestHandleClientException(t *testing.T) {
 
 	t.Run("/ returns 404", func(t *testing.T) {
 		caller := &SpyCaller{}
-		server := gode.NewServer(gode.NewHub(), caller)
+		server := gode.NewServer(gode.NewClientHub(), caller)
 
 		request, _ := http.NewRequest(http.MethodGet, "/", nil)
 		recorder := httptest.NewRecorder()
@@ -116,7 +117,7 @@ func TestHandleClientException(t *testing.T) {
 
 	t.Run("get 404 not found when game type out of range", func(t *testing.T) {
 		caller := &SpyCaller{}
-		server := gode.NewServer(gode.NewHub(), caller)
+		server := gode.NewServer(gode.NewClientHub(), caller)
 
 		request, _ := http.NewRequest(http.MethodGet, "/casino/6666", nil)
 		recorder := httptest.NewRecorder()
@@ -126,7 +127,7 @@ func TestHandleClientException(t *testing.T) {
 
 	t.Run("get 404 not found when game type out of range", func(t *testing.T) {
 		caller := &SpyCaller{}
-		server := gode.NewServer(gode.NewHub(), caller)
+		server := gode.NewServer(gode.NewClientHub(), caller)
 
 		request, _ := http.NewRequest(http.MethodGet, "/casino/4999", nil)
 		recorder := httptest.NewRecorder()
@@ -136,7 +137,7 @@ func TestHandleClientException(t *testing.T) {
 
 	t.Run("get /casino/5145 returns 400 bad request", func(t *testing.T) {
 		caller := &SpyCaller{}
-		server := gode.NewServer(gode.NewHub(), caller)
+		server := gode.NewServer(gode.NewClientHub(), caller)
 
 		request, _ := http.NewRequest(http.MethodGet, "/casino/5145", nil)
 		recorder := httptest.NewRecorder()
@@ -146,7 +147,7 @@ func TestHandleClientException(t *testing.T) {
 
 	t.Run("not response when send incorrect ws data", func(t *testing.T) {
 		caller := &SpyCaller{}
-		server := httptest.NewServer(gode.NewServer(gode.NewHub(), caller))
+		server := httptest.NewServer(gode.NewServer(gode.NewClientHub(), caller))
 		player := mustDialWS(t, makeWebSocketURL(server, "/casino/5145"))
 		defer server.Close()
 		defer player.Close()
@@ -161,7 +162,7 @@ func TestHandleClientException(t *testing.T) {
 
 	t.Run("not response when send incorrect ws action", func(t *testing.T) {
 		caller := &SpyCaller{}
-		server := httptest.NewServer(gode.NewServer(gode.NewHub(), caller))
+		server := httptest.NewServer(gode.NewServer(gode.NewClientHub(), caller))
 		player := mustDialWS(t, makeWebSocketURL(server, "/casino/5145"))
 		defer server.Close()
 		defer player.Close()
@@ -193,7 +194,7 @@ func TestHandleClientException(t *testing.T) {
 				err:    nil,
 			},
 		}}
-		server := httptest.NewServer(gode.NewServer(gode.NewHub(), spyCaller))
+		server := httptest.NewServer(gode.NewServer(gode.NewClientHub(), spyCaller))
 		player := mustDialWS(t, makeWebSocketURL(server, svrPath))
 		defer server.Close()
 
@@ -271,12 +272,12 @@ func TestGameHandler(t *testing.T) {
 			err:    nil,
 		},
 	}}
-	server := httptest.NewServer(gode.NewServer(gode.NewHub(), spyCaller))
+	server := httptest.NewServer(gode.NewServer(gode.NewClientHub(), spyCaller))
 	player := mustDialWS(t, makeWebSocketURL(server, svrPath))
 	defer server.Close()
 	defer player.Close()
 
-	t.Run("return casino api result with time", func(t *testing.T) {
+	t.Run("return casino api result within time", func(t *testing.T) {
 		assertWithin(t, timeout, func() {
 			//ready
 			assertReceiveBinaryMsg(t, player, `{"action":"ready","result":null}`)
@@ -371,7 +372,7 @@ func TestHandleCasinoAPIException(t *testing.T) {
 				},
 			},
 		}
-		server := httptest.NewServer(gode.NewServer(gode.NewHub(), caller))
+		server := httptest.NewServer(gode.NewServer(gode.NewClientHub(), caller))
 		player := mustDialWS(t, makeWebSocketURL(server, "/casino/5145"))
 		defer server.Close()
 		defer player.Close()
@@ -393,7 +394,7 @@ func TestHandleCasinoAPIException(t *testing.T) {
 				},
 			},
 		}
-		server := httptest.NewServer(gode.NewServer(gode.NewHub(), caller))
+		server := httptest.NewServer(gode.NewServer(gode.NewClientHub(), caller))
 		player := mustDialWS(t, makeWebSocketURL(server, "/casino/5145"))
 		defer server.Close()
 		defer player.Close()
@@ -415,7 +416,7 @@ func TestHandleCasinoAPIException(t *testing.T) {
 				},
 			},
 		}
-		server := httptest.NewServer(gode.NewServer(gode.NewHub(), caller))
+		server := httptest.NewServer(gode.NewServer(gode.NewClientHub(), caller))
 		player := mustDialWS(t, makeWebSocketURL(server, "/casino/5145"))
 		defer server.Close()
 		defer player.Close()
@@ -437,7 +438,7 @@ func TestHandleCasinoAPIException(t *testing.T) {
 				},
 			},
 		}
-		server := httptest.NewServer(gode.NewServer(gode.NewHub(), caller))
+		server := httptest.NewServer(gode.NewServer(gode.NewClientHub(), caller))
 		player := mustDialWS(t, makeWebSocketURL(server, "/casino/5145"))
 		defer server.Close()
 		defer player.Close()

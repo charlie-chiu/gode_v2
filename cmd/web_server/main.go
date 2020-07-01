@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	hub := gode.NewHub()
+	hub := gode.NewClientHub()
 	caller := casinoapi.NewFlash2db("http://103.241.238.74/")
 	server := gode.NewServer(hub, caller)
 
