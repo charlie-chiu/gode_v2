@@ -47,7 +47,6 @@ func (s *Server) gameHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// make sure every connection will get different client
-	gameType, _ := s.parseGameType(r)
 	c.GameType = gameType
 	_ = s.clients.Register(c)
 
@@ -121,7 +120,7 @@ func (s *Server) handleMessage(msg []byte, c *client.Client) {
 			return
 		}
 
-		c.WriteMsg(client.Response(client.LoginResponse, []byte(`{"event":"login"}`)))
+		c.WriteMsg(client.Response(client.LoginResponse, loginCheckResult))
 		c.WriteMsg(client.Response(client.TakeMachineResponse, apiResult))
 
 	case client.OnLoadInfo:

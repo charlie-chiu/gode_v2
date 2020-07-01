@@ -222,7 +222,7 @@ func TestGameHandler(t *testing.T) {
 
 			//ClientLogin
 			writeBinaryMsg(t, player, `{"action":"loginBySid","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
-			assertReceiveBinaryMsg(t, player, `{"action":"onLogin","result":{"event":"login"}}`)
+			assertReceiveBinaryMsg(t, player, `{"action":"onLogin","result":{"event":true,"data":{"user":{"UserID":"100","HallID":"6"},"Session":{"Session":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}}}}`)
 			assertReceiveBinaryMsg(t, player, `{"action":"onTakeMachine","result":{"testing":"machineOccupy"}}`)
 
 			//ClientOnLoadInfo
