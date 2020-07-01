@@ -11,6 +11,8 @@ import (
 	"gode/types"
 )
 
+const dummyGameCode = types.GameCode(0)
+
 type Server struct {
 	http.Handler
 
@@ -63,7 +65,8 @@ func (s *Server) gameHandler(w http.ResponseWriter, r *http.Request) {
 			if ok {
 				s.handleMessage(msg, c)
 			} else {
-				//s.handleDisconnect()
+				_, _ = s.api.Call(c.GameType, "balanceExchange", c.UserID, c.HallID, dummyGameCode)
+				_, _ = s.api.Call(c.GameType, "machineLeave", c.UserID, c.HallID, dummyGameCode)
 				s.clients.Unregister(c)
 				closed = true
 			}
@@ -102,7 +105,6 @@ type LoginCheckResult struct {
 }
 
 func (s *Server) handleMessage(msg []byte, c *client.Client) {
-	dummyGameCode := types.GameCode(0)
 	data := client.ParseData(msg)
 
 	switch data.Action {

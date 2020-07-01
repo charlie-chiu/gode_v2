@@ -173,6 +173,67 @@ func TestHandleClientException(t *testing.T) {
 		writeBinaryMsg(t, player, `{"action": "hello"}`)
 		assertNoResponseWithin(t, timeout, player)
 	})
+
+	t.Run("call leaveMachine when client disconnect", func(t *testing.T) {
+		const timeout = 10 * time.Millisecond
+		gameType := types.GameType(5199)
+		svrPath := fmt.Sprintf("/casino/%d", gameType)
+
+		spyCaller := &SpyCaller{response: map[string]apiResponse{
+			"loginCheck": {
+				result: []byte(`{"event":true, "data":{"user": {"UserID": "100", "HallID":"6"}, "Session":{"Session":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}}}`),
+				err:    nil,
+			},
+			"balanceExchange": {
+				result: []byte(`{"testing":"BalanceExchange"}`),
+				err:    nil,
+			},
+			"machineLeave": {
+				result: []byte(`{"testing":"LeaveMachine"}`),
+				err:    nil,
+			},
+		}}
+		server := httptest.NewServer(gode.NewServer(gode.NewHub(), spyCaller))
+		player := mustDialWS(t, makeWebSocketURL(server, svrPath))
+		defer server.Close()
+
+		assertWithin(t, timeout, func() {
+			assertReceiveBinaryMsg(t, player, `{"action":"ready","result":null}`)
+		})
+
+		writeBinaryMsg(t, player, `{"action":"loginBySid","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
+
+		player.Close()
+
+		sid := types.SessionID(`21d9b36e42c8275a4359f6815b859df05ec2bb0a`)
+		uid := types.UserID(100)
+		hid := types.HallID(6)
+		gameCode := types.GameCode(0)
+		expectedHistory := apiHistory{
+			{
+				service:    gameType,
+				function:   "loginCheck",
+				parameters: []interface{}{sid},
+			},
+			{
+				service:    gameType,
+				function:   "machineOccupy",
+				parameters: []interface{}{uid, hid, gameCode},
+			},
+			{
+				service:    gameType,
+				function:   "balanceExchange",
+				parameters: []interface{}{uid, hid, gameCode},
+			},
+			{
+				service:    gameType,
+				function:   "machineLeave",
+				parameters: []interface{}{uid, hid, gameCode},
+			},
+		}
+		waitForProcess()
+		assertLogEqual(t, expectedHistory, spyCaller.history)
+	})
 }
 
 func TestGameHandler(t *testing.T) {
