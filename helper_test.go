@@ -10,6 +10,7 @@ import (
 
 	"github.com/gorilla/websocket"
 	"gode/client"
+	"gode/types"
 )
 
 type SpyCaller struct {
@@ -17,7 +18,7 @@ type SpyCaller struct {
 	response map[string]apiResponse
 }
 
-func (c *SpyCaller) Call(service string, functionName string, parameters ...interface{}) ([]byte, error) {
+func (c *SpyCaller) Call(service types.GameType, functionName string, parameters ...interface{}) ([]byte, error) {
 	c.history = append(c.history, apiLog{
 		service:    service,
 		function:   functionName,
@@ -35,7 +36,7 @@ type apiResponse struct {
 type apiHistory []apiLog
 
 type apiLog struct {
-	service    string
+	service    types.GameType
 	function   string
 	parameters []interface{}
 }

@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"gode"
+	"gode/types"
 )
 
 func main() {
@@ -17,6 +18,6 @@ func main() {
 
 type StubAPI struct{}
 
-func (StubAPI) Call(service string, functionName string, parameters ...interface{}) ([]byte, error) {
+func (StubAPI) Call(service types.GameType, functionName string, parameters ...interface{}) ([]byte, error) {
 	panic("implement me")
 }

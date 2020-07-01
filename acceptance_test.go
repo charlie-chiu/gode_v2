@@ -157,6 +157,8 @@ func TestHandleClientException(t *testing.T) {
 
 func TestGameHandler(t *testing.T) {
 	const timeout = 10 * time.Millisecond
+	gameType := types.GameType(5199)
+	svrPath := fmt.Sprintf("/casino/%d", gameType)
 
 	spyCaller := &SpyCaller{response: map[string]apiResponse{
 		"loginCheck": {
@@ -189,7 +191,7 @@ func TestGameHandler(t *testing.T) {
 		},
 	}}
 	server := httptest.NewServer(gode.NewServer(gode.NewHub(), spyCaller))
-	player := mustDialWS(t, makeWebSocketURL(server, "/casino/5145"))
+	player := mustDialWS(t, makeWebSocketURL(server, svrPath))
 	defer server.Close()
 	defer player.Close()
 
@@ -235,37 +237,37 @@ func TestGameHandler(t *testing.T) {
 		betInfo := types.BetInfo(`{"BetLevel":5}`)
 		expectedHistory := apiHistory{
 			{
-				service:    "Client",
+				service:    gameType,
 				function:   "loginCheck",
 				parameters: []interface{}{sid},
 			},
 			{
-				service:    "casino.slot.line243.BuBuGaoSheng",
+				service:    gameType,
 				function:   "machineOccupy",
 				parameters: []interface{}{uid, hid, gameCode},
 			},
 			{
-				service:    "casino.slot.line243.BuBuGaoSheng",
+				service:    gameType,
 				function:   "onLoadInfo",
 				parameters: []interface{}{uid, gameCode},
 			},
 			{
-				service:    "casino.slot.line243.BuBuGaoSheng",
+				service:    gameType,
 				function:   "getMachineDetail",
 				parameters: []interface{}{uid, gameCode},
 			},
 			{
-				service:    "casino.slot.line243.BuBuGaoSheng",
+				service:    gameType,
 				function:   "creditExchange",
 				parameters: []interface{}{sid, gameCode, betBase, exchangeCredit},
 			},
 			{
-				service:    "casino.slot.line243.BuBuGaoSheng",
+				service:    gameType,
 				function:   "beginGame",
 				parameters: []interface{}{sid, betInfo},
 			},
 			{
-				service:    "casino.slot.line243.BuBuGaoSheng",
+				service:    gameType,
 				function:   "balanceExchange",
 				parameters: []interface{}{uid, hid, gameCode},
 			},
