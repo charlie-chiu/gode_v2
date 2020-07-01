@@ -15,7 +15,7 @@ func TestFlash2db_Call(t *testing.T) {
 	const dummyFunction = "dummyFunc"
 
 	t.Run("get client service url when function is loginCheck", func(t *testing.T) {
-		function := "loginCheck"
+		function := LoginCheck
 		APIResult := `{"testing": "loginCheck"}`
 
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

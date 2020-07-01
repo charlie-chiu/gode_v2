@@ -43,7 +43,7 @@ func (f *Flash2db) Call(gt types.GameType, function string, parameters ...interf
 }
 
 func (f *Flash2db) getService(gameType types.GameType, function string) (string, error) {
-	if function == "loginCheck" {
+	if function == LoginCheck {
 		return ServiceClient, nil
 	}
 

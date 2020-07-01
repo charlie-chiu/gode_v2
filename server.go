@@ -63,8 +63,8 @@ func (s *Server) gameHandler(w http.ResponseWriter, r *http.Request) {
 		if ok {
 			s.handleMessage(msg, c)
 		} else {
-			_, _ = s.api.Call(c.GameType, "balanceExchange", c.UserID, c.HallID, dummyGameCode)
-			_, _ = s.api.Call(c.GameType, "machineLeave", c.UserID, c.HallID, dummyGameCode)
+			_, _ = s.api.Call(c.GameType, casinoapi.BalanceExchange, c.UserID, c.HallID, dummyGameCode)
+			_, _ = s.api.Call(c.GameType, casinoapi.MachineLeave, c.UserID, c.HallID, dummyGameCode)
 			s.clients.Unregister(c)
 			break
 		}
@@ -103,7 +103,7 @@ func (s *Server) handleMessage(msg []byte, c *client.Client) {
 
 	switch data.Action {
 	case client.Login:
-		loginCheckResult, err := s.api.Call(c.GameType, "loginCheck", data.SessionID)
+		loginCheckResult, err := s.api.Call(c.GameType, casinoapi.LoginCheck, data.SessionID)
 		if err != nil {
 			return
 		}
@@ -112,7 +112,7 @@ func (s *Server) handleMessage(msg []byte, c *client.Client) {
 			return
 		}
 
-		apiResult, err := s.api.Call(c.GameType, "machineOccupy", c.UserID, c.HallID, dummyGameCode)
+		apiResult, err := s.api.Call(c.GameType, casinoapi.MachineOccupy, c.UserID, c.HallID, dummyGameCode)
 		if err != nil {
 			return
 		}
@@ -121,26 +121,26 @@ func (s *Server) handleMessage(msg []byte, c *client.Client) {
 		c.WriteMsg(client.Response(client.TakeMachineResponse, apiResult))
 
 	case client.OnLoadInfo:
-		apiResult, _ := s.api.Call(c.GameType, "onLoadInfo", c.UserID, dummyGameCode)
+		apiResult, _ := s.api.Call(c.GameType, casinoapi.OnLoadInfo, c.UserID, dummyGameCode)
 		c.WriteMsg(client.Response(client.OnLoadInfoResponse, apiResult))
 
 	case client.GetMachineDetail:
-		apiResult, _ := s.api.Call(c.GameType, "getMachineDetail", c.UserID, dummyGameCode)
+		apiResult, _ := s.api.Call(c.GameType, casinoapi.GetMachineDetail, c.UserID, dummyGameCode)
 		c.WriteMsg(client.Response(client.GetMachineDetailResponse, apiResult))
 
 	case client.BeginGame:
-		apiResult, err := s.api.Call(c.GameType, "beginGame", c.SessionID, dummyGameCode, data.BetInfo)
+		apiResult, err := s.api.Call(c.GameType, casinoapi.BeginGame, c.SessionID, dummyGameCode, data.BetInfo)
 		if err != nil {
 			return
 		}
 		c.WriteMsg(client.Response(client.BeginGameResponse, apiResult))
 
 	case client.ExchangeCredit:
-		apiResult, _ := s.api.Call(c.GameType, "creditExchange", c.SessionID, dummyGameCode, data.BetBase, data.Credit)
+		apiResult, _ := s.api.Call(c.GameType, casinoapi.CreditExchange, c.SessionID, dummyGameCode, data.BetBase, data.Credit)
 		c.WriteMsg(client.Response(client.ExchangeCreditResponse, apiResult))
 
 	case client.ExchangeBalance:
-		apiResult, _ := s.api.Call(c.GameType, "balanceExchange", c.UserID, c.HallID, dummyGameCode)
+		apiResult, _ := s.api.Call(c.GameType, casinoapi.BalanceExchange, c.UserID, c.HallID, dummyGameCode)
 		c.WriteMsg(client.Response(client.ExchangeBalanceResponse, apiResult))
 	}
 }
