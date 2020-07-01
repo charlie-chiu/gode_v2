@@ -1,10 +1,14 @@
 package client
 
-import "encoding/json"
+import (
+	"encoding/json"
+
+	"gode/types"
+)
 
 type WSData struct {
 	Action    string          `json:"action"`
-	SessionID string          `json:"sid"`
+	SessionID types.SessionID `json:"sid"`
 	BetBase   string          `json:"rate"`
 	Credit    string          `json:"credit"`
 	BetInfo   json.RawMessage `json:"betInfo"`

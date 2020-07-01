@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/websocket"
+	"gode/types"
 )
 
 const messageType = websocket.BinaryMessage
@@ -19,10 +20,10 @@ var wsUpgrader = websocket.Upgrader{
 }
 
 type Client struct {
-	GameType  uint16
-	UserID    uint32
-	HallID    uint32
-	SessionID string
+	GameType  types.GameType
+	UserID    types.UserID
+	HallID    types.HallID
+	SessionID types.SessionID
 
 	WSConn *websocket.Conn
 }

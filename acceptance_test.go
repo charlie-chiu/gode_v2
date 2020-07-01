@@ -13,6 +13,7 @@ import (
 
 	"gode"
 	"gode/client"
+	"gode/types"
 )
 
 func TestMain(m *testing.M) {
@@ -66,7 +67,7 @@ func TestClient(t *testing.T) {
 			GameType:  5888,
 			UserID:    1325,
 			HallID:    0,
-			SessionID: "21d9b36e42c8275a4359f6815b859df05ec2bb0a",
+			SessionID: types.SessionID("21d9b36e42c8275a4359f6815b859df05ec2bb0a"),
 		}
 		got := *spyHub.clients[0]
 
@@ -226,10 +227,10 @@ func TestGameHandler(t *testing.T) {
 	})
 
 	t.Run("called casino api with correct parameters", func(t *testing.T) {
-		uid := uint32(100)
-		hid := uint32(6)
-		gameCode := uint16(0)
-		sid := "21d9b36e42c8275a4359f6815b859df05ec2bb0a"
+		uid := types.UserID(100)
+		hid := types.HallID(6)
+		gameCode := types.GameCode(0)
+		sid := types.SessionID(`21d9b36e42c8275a4359f6815b859df05ec2bb0a`)
 		betBase := "1:1"
 		exchangeCredit := "50000"
 		betInfo := json.RawMessage(`{"BetLevel":5}`)

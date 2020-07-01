@@ -8,6 +8,7 @@ import (
 
 	"gode/casinoapi"
 	"gode/client"
+	"gode/types"
 )
 
 type Server struct {
@@ -67,11 +68,11 @@ func (s *Server) gameHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *Server) parseGameType(r *http.Request) (gameType uint16, err error) {
+func (s *Server) parseGameType(r *http.Request) (gameType types.GameType, err error) {
 	gameTypeStr := strings.TrimLeft(r.URL.Path, "/casino/")
 	gameTypeUint64, err := strconv.ParseUint(gameTypeStr, 10, 0)
 
-	return uint16(gameTypeUint64), err
+	return types.GameType(gameTypeUint64), err
 }
 
 type LoginCheckResult struct {
@@ -95,7 +96,7 @@ type LoginCheckResult struct {
 }
 
 func (s *Server) handleMessage(msg []byte, c *client.Client) {
-	dummyGameCode := uint16(0)
+	dummyGameCode := types.GameCode(0)
 	data := client.ParseData(msg)
 	switch data.Action {
 	case client.Login:
@@ -106,10 +107,10 @@ func (s *Server) handleMessage(msg []byte, c *client.Client) {
 		result := &LoginCheckResult{}
 		_ = json.Unmarshal(loginCheckResult, result)
 		hid, _ := strconv.ParseUint(result.Data.User.HallID, 10, 0)
-		c.HallID = uint32(hid)
+		c.HallID = types.HallID(hid)
 		uid, _ := strconv.ParseUint(result.Data.User.UserID, 10, 0)
-		c.UserID = uint32(uid)
-		c.SessionID = result.Data.Session.Session
+		c.UserID = types.UserID(uid)
+		c.SessionID = types.SessionID(result.Data.Session.Session)
 
 		apiResult, err := s.api.Call("casino.slot.line243.BuBuGaoSheng", "machineOccupy", c.UserID, c.HallID, dummyGameCode)
 		if err != nil {
