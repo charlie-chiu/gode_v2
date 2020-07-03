@@ -4,20 +4,23 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 )
 
 const (
-	Debug = 1 << iota
-	Info
-	Notice
+	Debug  = 1 << iota // 1
+	Info               // 2
+	Notice             // 4
 
-	Nothing
+	Nothing = 1024
 )
 
 var logText = map[int]string{
 	Debug:  "DEBUG",
 	Info:   "INFO",
 	Notice: "NOTICE",
+
+	Nothing: "NOTHING",
 }
 
 var logger = log.New(os.Stderr, "", log.LstdFlags)
@@ -41,4 +44,17 @@ func Print(logLevel int, v ...interface{}) {
 
 func Fatal(v ...interface{}) {
 	logger.Fatal(v...)
+}
+
+func ParseLogLevel(logLevel string) int {
+	switch strings.ToUpper(logLevel) {
+	case "DEBUG":
+		return Debug
+	case "INFO":
+		return Info
+	case "NOTICE":
+		return Notice
+	default:
+		return Nothing
+	}
 }
