@@ -3,14 +3,21 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
+	"github.com/joho/godotenv"
 	"gode"
 	"gode/casinoapi"
 )
 
 func main() {
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Fatal("error loading .env file", err)
+	}
+
 	hub := gode.NewClientHub()
-	caller := casinoapi.NewFlash2db("http://103.241.238.74/")
+	caller := casinoapi.NewFlash2db(os.Getenv("FLASH2DB_URL"))
 	server := gode.NewServer(hub, caller)
 
 	log.Fatal(http.ListenAndServe(":80", server))
