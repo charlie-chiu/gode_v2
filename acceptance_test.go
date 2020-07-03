@@ -2,7 +2,6 @@ package gode_test
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -12,12 +11,13 @@ import (
 
 	"gode"
 	"gode/client"
+	"gode/log"
 	"gode/types"
 )
 
 // set up testing
 func TestMain(m *testing.M) {
-	log.SetFlags(log.Lshortfile)
+	log.SetLevel(log.Nothing)
 
 	os.Exit(m.Run())
 }

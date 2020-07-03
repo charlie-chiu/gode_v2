@@ -2,10 +2,11 @@ package client
 
 import (
 	"encoding/json"
-	"log"
+	"fmt"
 	"net/http"
 
 	"github.com/gorilla/websocket"
+	"gode/log"
 	"gode/types"
 )
 
@@ -44,7 +45,7 @@ func Response(action string, result json.RawMessage) (data json.RawMessage) {
 
 	data, err := json.Marshal(response)
 	if err != nil {
-		log.Printf("client Response JSON Marshal error, %v", err)
+		log.Print(log.Notice, fmt.Sprintf("client Response JSON Marshal error, %v", err))
 	}
 
 	return
@@ -65,14 +66,14 @@ func (c *Client) ListenJSON(wsMsg chan []byte) {
 	for {
 		_, msg, err := c.WSConn.ReadMessage()
 		if err != nil {
-			//log.Printf("listenJSON ReadMessage Error: %v", err)
+			log.Print(log.Notice, fmt.Sprintf("listenJSON ReadMessage Error: %v", err))
 			close(wsMsg)
 			break
 		}
 
 		//maybe shouldn't valid JSON here
 		if !json.Valid(msg) {
-			//log.Printf("listenJSON Valid JSON error, got %q", string(msg))
+			log.Print(log.Notice, fmt.Sprintf("listenJSON Valid JSON error, got %q", string(msg)))
 			continue
 		}
 
@@ -83,6 +84,6 @@ func (c *Client) ListenJSON(wsMsg chan []byte) {
 func (c *Client) WriteMsg(msg []byte) {
 	err := c.WSConn.WriteMessage(messageType, msg)
 	if err != nil {
-		log.Println("Write Error: ", err)
+		log.Print(log.Notice, fmt.Sprintf("WriteMsg Error: %v", err))
 	}
 }

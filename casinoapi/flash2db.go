@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"gode/log"
 	"gode/types"
 )
 
@@ -28,7 +29,8 @@ func (f *Flash2db) Call(gt types.GameType, function string, parameters ...interf
 	if err != nil {
 		return nil, err
 	}
-	response, err := http.Get(f.url + f.makePath(service, function, parameters...))
+	url := f.url + f.makePath(service, function, parameters...)
+	response, err := http.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("flash2db get error %v", err)
 	}
@@ -38,6 +40,9 @@ func (f *Flash2db) Call(gt types.GameType, function string, parameters ...interf
 	defer response.Body.Close()
 	//todo: understand what this error means
 	content, _ := ioutil.ReadAll(response.Body)
+
+	log.Print(log.Debug, fmt.Sprintf("f2db url: %s", url))
+	log.Print(log.Debug, fmt.Sprintf("f2db res: %s", content))
 
 	return content, nil
 }
