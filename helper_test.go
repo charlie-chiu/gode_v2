@@ -1,6 +1,7 @@
 package gode_test
 
 import (
+	"bytes"
 	"fmt"
 	"net/http/httptest"
 	"reflect"
@@ -171,4 +172,16 @@ func assertLogEqual(t *testing.T, expectedHistory, wantedLog apiHistory) {
 			t.Errorf("%dth api log not equal,\nwant:%v\n got:%v", i+1, expectedLog, gotLog)
 		}
 	}
+}
+
+func assertClientEqual(t *testing.T, want, got client.Client) {
+	t.Helper()
+	isGameTypeSame := want.GameType == got.GameType
+	isUserIDSame := want.UserID == got.UserID
+	isHallIDSame := want.HallID == got.HallID
+	isSIDSame := bytes.Compare(want.SessionID, got.SessionID) == 0
+	if !isGameTypeSame || !isUserIDSame || !isSIDSame || !isHallIDSame {
+		t.Errorf("client not equal, \nwant: %+v\n got: %+v\n", want, got)
+	}
+
 }

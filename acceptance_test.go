@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"reflect"
 	"testing"
 	"time"
 
@@ -23,6 +22,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestClient(t *testing.T) {
+	// todo: handle fatal error: concurrent map writes in test
 	t.Run("register on connect and unregister on disconnect", func(t *testing.T) {
 		pool := gode.NewClientHub()
 		Server := httptest.NewServer(gode.NewServer(pool, &SpyCaller{}))
@@ -71,13 +71,7 @@ func TestClient(t *testing.T) {
 		}
 		got := *spyHub.clients[0]
 
-		// just for testing, todo: remove this
-		got.WSConn = nil
-
-		// assert client equal
-		if !reflect.DeepEqual(want, got) {
-			t.Errorf("client not equal, \nwant: %+v\n got: %+v\n", want, got)
-		}
+		assertClientEqual(t, want, got)
 	})
 
 	t.Run("/casino/{gameType} store game type in client", func(t *testing.T) {
