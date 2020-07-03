@@ -19,8 +19,8 @@ func TestFlash2db_Call(t *testing.T) {
 		APIResult := `{"testing": "loginCheck"}`
 
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			want := fmt.Sprintf("%s/%s.%s", urlPrefix, "Client", function)
-			assertURLEqual(t, r.URL.Path, want)
+			want := fmt.Sprintf("%s/%s.%s", PathPrefix, "Client", function)
+			assertPathEqual(t, r.URL.Path, want)
 
 			_, _ = fmt.Fprint(w, APIResult)
 		}))
@@ -40,8 +40,8 @@ func TestFlash2db_Call(t *testing.T) {
 		APIResult := `{"event": true}`
 
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			want := fmt.Sprintf("%s/%s.%s", urlPrefix, service, function)
-			assertURLEqual(t, r.URL.Path, want)
+			want := fmt.Sprintf("%s/%s.%s", PathPrefix, service, function)
+			assertPathEqual(t, r.URL.Path, want)
 
 			_, _ = fmt.Fprint(w, APIResult)
 		}))
@@ -66,8 +66,8 @@ func TestFlash2db_Call(t *testing.T) {
 
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// "/amfphp/json.php/casino.slot.line243.BuBuGaoSheng.beginGame/19870604xi/9527/{"BetLevel":5}/50000"
-			want := fmt.Sprintf("%s/%s.%s/%s/%d/%s/%d", urlPrefix, service, function, sid, uid, betInfo, credit)
-			assertURLEqual(t, r.URL.Path, want)
+			want := fmt.Sprintf("%s/%s.%s/%s/%d/%s/%d", PathPrefix, service, function, sid, uid, betInfo, credit)
+			assertPathEqual(t, r.URL.Path, want)
 
 			_, _ = fmt.Fprint(w, APIResult)
 		}))
@@ -129,18 +129,18 @@ func TestFlash2db_Call(t *testing.T) {
 	})
 }
 
-func TestMakeURL(t *testing.T) {
+func TestMakePath(t *testing.T) {
 	f := &Flash2db{}
 
-	got := f.makeURL("Client", "CheckLogin", "someSID", "127.0.0.1")
+	got := f.makePath("Client", "CheckLogin", "someSID", "127.0.0.1")
 	want := "/amfphp/json.php/Client.CheckLogin/someSID/127.0.0.1"
 
-	assertURLEqual(t, got, want)
+	assertPathEqual(t, got, want)
 }
 
-func assertURLEqual(t *testing.T, got string, want string) {
+func assertPathEqual(t *testing.T, got string, want string) {
 	t.Helper()
 	if got != want {
-		t.Errorf("URL not equal,\nwant %q\n got %q", want, got)
+		t.Errorf("Path not equal,\nwant %q\n got %q", want, got)
 	}
 }

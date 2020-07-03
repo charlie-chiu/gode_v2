@@ -9,18 +9,18 @@ import (
 	"gode/types"
 )
 
-const urlPrefix = "/amfphp/json.php"
+const PathPrefix = "/amfphp/json.php"
 
 const ServiceClient = "Client"
 const Service5145 = "casino.slot.line243.BuBuGaoSheng"
 const Service5156 = "casino.slot.crash.ZumaEmpire"
 
 type Flash2db struct {
-	host string
+	url string
 }
 
-func NewFlash2db(host string) *Flash2db {
-	return &Flash2db{host: host}
+func NewFlash2db(url string) *Flash2db {
+	return &Flash2db{url: url}
 }
 
 func (f *Flash2db) Call(gt types.GameType, function string, parameters ...interface{}) ([]byte, error) {
@@ -28,7 +28,7 @@ func (f *Flash2db) Call(gt types.GameType, function string, parameters ...interf
 	if err != nil {
 		return nil, err
 	}
-	response, err := http.Get(f.host + f.makeURL(service, function, parameters...))
+	response, err := http.Get(f.url + f.makePath(service, function, parameters...))
 	if err != nil {
 		return nil, fmt.Errorf("flash2db get error %v", err)
 	}
@@ -57,10 +57,10 @@ func (f *Flash2db) getService(gameType types.GameType, function string) (string,
 	return "", fmt.Errorf("game type not exsits")
 }
 
-func (f *Flash2db) makeURL(service, function string, parameters ...interface{}) (URL string) {
+func (f *Flash2db) makePath(service, function string, parameters ...interface{}) string {
 	b := strings.Builder{}
 
-	b.WriteString(fmt.Sprintf("%s/%s.%s", urlPrefix, service, function))
+	b.WriteString(fmt.Sprintf("%s/%s.%s", PathPrefix, service, function))
 
 	for _, p := range parameters {
 		b.WriteString(fmt.Sprintf("/%v", p))
