@@ -7,7 +7,7 @@ usage
 ===
 
 ```
-$ go build cmd/web_server/web_server.go
+$ go build -race cmd/web_server/web_server.go
 $ cp .env.example .env
 $ ./web_server
 ```
@@ -18,5 +18,5 @@ testing
 ===
 執行所有的測試
 ```
-$ go test all
+$ go test -v ./... -race
 ```
