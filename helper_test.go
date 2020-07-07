@@ -21,6 +21,7 @@ type SpyCaller struct {
 	mutex    sync.Mutex
 }
 
+// rename to spyAPI?
 func (c *SpyCaller) Call(service types.GameType, function string, parameters ...interface{}) ([]byte, error) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
@@ -31,6 +32,13 @@ func (c *SpyCaller) Call(service types.GameType, function string, parameters ...
 	})
 
 	return c.response[function].result, c.response[function].err
+}
+
+func (c *SpyCaller) History() apiHistory {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	return c.history
 }
 
 type apiResponse struct {

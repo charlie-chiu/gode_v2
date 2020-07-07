@@ -251,7 +251,8 @@ func TestHandleClientException(t *testing.T) {
 			},
 		}
 		waitForProcess()
-		assertLogEqual(t, expectedHistory, spyCaller.history)
+
+		assertLogEqual(t, expectedHistory, spyCaller.History())
 	})
 }
 
