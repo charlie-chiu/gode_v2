@@ -22,11 +22,14 @@ func TestMain(m *testing.M) {
 }
 
 func TestClient(t *testing.T) {
+	const LoginBySidMsg = `{"action":"loginBySid","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`
+	const LoginAPIResult = `{"event":true, "data":{"user": {"UserID": "1325", "HallID":"10"}, "Session":{"Session":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}}}`
+
 	t.Run("register client after login and unregister on disconnect", func(t *testing.T) {
 		spyCaller := &SpyCaller{
 			response: map[string]apiResponse{
 				"loginCheck": {
-					result: []byte(`{"event":true, "data":{"user": {"UserID": "1325", "HallID":"10"}, "Session":{"Session":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}}}`),
+					result: []byte(LoginAPIResult),
 					err:    nil,
 				},
 			},
@@ -39,12 +42,12 @@ func TestClient(t *testing.T) {
 		assertNumberOfClient(t, 0, pool.NumberOfClients())
 
 		player1 := mustDialWS(t, makeWebSocketURL(Server, "/casino/5100"))
-		writeBinaryMsg(t, player1, `{"action":"loginBySid","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
+		writeBinaryMsg(t, player1, LoginBySidMsg)
 		player2 := mustDialWS(t, makeWebSocketURL(Server, "/casino/5200"))
-		writeBinaryMsg(t, player2, `{"action":"loginBySid","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
+		writeBinaryMsg(t, player2, LoginBySidMsg)
 		player3 := mustDialWS(t, makeWebSocketURL(Server, "/casino/5300"))
 		defer player3.Close()
-		writeBinaryMsg(t, player3, `{"action":"loginBySid","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
+		writeBinaryMsg(t, player3, LoginBySidMsg)
 
 		// 3 players
 		waitForProcess()
@@ -60,18 +63,18 @@ func TestClient(t *testing.T) {
 	t.Run("store userID and hallID after loginBySID called", func(t *testing.T) {
 		spyCaller := &SpyCaller{
 			response: map[string]apiResponse{
-				"loginCheck": apiResponse{
-					result: []byte(`{"event":true, "data":{"user": {"UserID": "1325", "HallID":"10"}, "Session":{"Session":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}}}`),
+				"loginCheck": {
+					result: []byte(LoginAPIResult),
 					err:    nil,
 				},
 			},
 		}
 		spyHub := &SpyHub{}
 		server := httptest.NewServer(gode.NewServer(spyHub, spyCaller))
-		wsClient := mustDialWS(t, makeWebSocketURL(server, "/casino/5888"))
+		player := mustDialWS(t, makeWebSocketURL(server, "/casino/5888"))
 		defer server.Close()
-		defer wsClient.Close()
-		writeBinaryMsg(t, wsClient, `{"action":"loginBySid","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
+		defer player.Close()
+		writeBinaryMsg(t, player, LoginBySidMsg)
 
 		waitForProcess()
 
@@ -90,7 +93,7 @@ func TestClient(t *testing.T) {
 		spyCaller := &SpyCaller{
 			response: map[string]apiResponse{
 				"loginCheck": {
-					result: []byte(`{"event":true, "data":{"user": {"UserID": "1325", "HallID":"10"}, "Session":{"Session":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}}}`),
+					result: []byte(LoginAPIResult),
 					err:    nil,
 				},
 			},
@@ -98,9 +101,9 @@ func TestClient(t *testing.T) {
 		spyHub := &SpyHub{}
 		server := httptest.NewServer(gode.NewServer(spyHub, spyCaller))
 		player1 := mustDialWS(t, makeWebSocketURL(server, "/casino/5145"))
-		writeBinaryMsg(t, player1, `{"action":"loginBySid","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
+		writeBinaryMsg(t, player1, LoginBySidMsg)
 		player2 := mustDialWS(t, makeWebSocketURL(server, "/casino/5188"))
-		writeBinaryMsg(t, player2, `{"action":"loginBySid","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
+		writeBinaryMsg(t, player2, LoginBySidMsg)
 		defer server.Close()
 		defer player1.Close()
 		defer player2.Close()
