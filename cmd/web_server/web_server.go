@@ -19,9 +19,9 @@ func main() {
 	//set log level
 	log.SetLevel(log.ParseLogLevel(os.Getenv("LOG_LEVEL")))
 
-	hub := gode.NewClientHub()
+	clientPool := gode.NewClientHub()
 	caller := casinoapi.NewFlash2db(os.Getenv("FLASH2DB_URL"))
-	server := gode.NewServer(hub, caller)
+	server := gode.NewServer(clientPool, caller)
 
 	log.Fatal(http.ListenAndServe(":80", server))
 }

@@ -21,10 +21,10 @@ type Server struct {
 	api casinoapi.Caller
 }
 
-func NewServer(clients ClientPool, caller casinoapi.Caller) (s *Server) {
+func NewServer(clients ClientPool, casinoAPI casinoapi.Caller) (s *Server) {
 	s = &Server{
 		clients: clients,
-		api:     caller,
+		api:     casinoAPI,
 	}
 
 	router := http.NewServeMux()
