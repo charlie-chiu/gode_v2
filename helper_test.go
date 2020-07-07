@@ -15,30 +15,29 @@ import (
 	"gode/types"
 )
 
-type SpyCaller struct {
+type SpyAPI struct {
 	history  apiHistory
 	response map[string]apiResponse
 	mutex    sync.Mutex
 }
 
-// rename to spyAPI?
-func (c *SpyCaller) Call(service types.GameType, function string, parameters ...interface{}) ([]byte, error) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
-	c.history = append(c.history, apiLog{
+func (a *SpyAPI) Call(service types.GameType, function string, parameters ...interface{}) ([]byte, error) {
+	a.mutex.Lock()
+	defer a.mutex.Unlock()
+	a.history = append(a.history, apiLog{
 		service:    service,
 		function:   function,
 		parameters: parameters,
 	})
 
-	return c.response[function].result, c.response[function].err
+	return a.response[function].result, a.response[function].err
 }
 
-func (c *SpyCaller) History() apiHistory {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
+func (a *SpyAPI) History() apiHistory {
+	a.mutex.Lock()
+	defer a.mutex.Unlock()
 
-	return c.history
+	return a.history
 }
 
 type apiResponse struct {
