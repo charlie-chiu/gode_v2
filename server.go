@@ -50,8 +50,6 @@ func (s *Server) gameHandler(w http.ResponseWriter, r *http.Request) {
 
 	// make sure every connection will get different client
 	c.GameType = gameType
-	// only return an error when reach client limit
-	_ = s.clients.Register(c)
 
 	c.WriteMsg(client.Response(client.ReadyResponse, []byte(`null`)))
 
@@ -91,6 +89,8 @@ func (s *Server) handleMessage(msg []byte, c *client.Client) {
 		if err := storeLoginResult(loginCheckResult, c); err != nil {
 			return
 		}
+		// only return an error when reach client limit
+		_ = s.clients.Register(c)
 
 		apiResult, err := s.api.Call(c.GameType, casinoapi.MachineOccupy, c.UserID, c.HallID, dummyGameCode)
 		if err != nil {

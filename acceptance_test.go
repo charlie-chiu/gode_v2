@@ -22,26 +22,38 @@ func TestMain(m *testing.M) {
 }
 
 func TestClient(t *testing.T) {
-	// todo: handle fatal error: concurrent map writes in test
-	t.Run("register on connect and unregister on disconnect", func(t *testing.T) {
+	t.Run("register client after login and unregister on disconnect", func(t *testing.T) {
+		spyCaller := &SpyCaller{
+			response: map[string]apiResponse{
+				"loginCheck": {
+					result: []byte(`{"event":true, "data":{"user": {"UserID": "1325", "HallID":"10"}, "Session":{"Session":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}}}`),
+					err:    nil,
+				},
+			},
+		}
 		pool := gode.NewClientHub()
-		Server := httptest.NewServer(gode.NewServer(pool, &SpyCaller{}))
+		Server := httptest.NewServer(gode.NewServer(pool, spyCaller))
 		defer Server.Close()
 
 		// no player
 		assertNumberOfClient(t, 0, pool.NumberOfClients())
 
 		player1 := mustDialWS(t, makeWebSocketURL(Server, "/casino/5100"))
+		writeBinaryMsg(t, player1, `{"action":"loginBySid","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
 		player2 := mustDialWS(t, makeWebSocketURL(Server, "/casino/5200"))
+		writeBinaryMsg(t, player2, `{"action":"loginBySid","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
 		player3 := mustDialWS(t, makeWebSocketURL(Server, "/casino/5300"))
 		defer player3.Close()
+		writeBinaryMsg(t, player3, `{"action":"loginBySid","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
+
 		// 3 players
+		waitForProcess()
 		assertNumberOfClient(t, 3, pool.NumberOfClients())
 
+		// 1 player
 		player1.Close()
 		player2.Close()
 		waitForProcess()
-		// 1 player
 		assertNumberOfClient(t, 1, pool.NumberOfClients())
 	})
 
@@ -69,27 +81,36 @@ func TestClient(t *testing.T) {
 			HallID:    10,
 			SessionID: types.SessionID("21d9b36e42c8275a4359f6815b859df05ec2bb0a"),
 		}
-		got := *spyHub.clients[0]
+		got := *spyHub.GetClient(0)
 
 		assertClientEqual(t, want, got)
 	})
 
 	t.Run("/casino/{gameType} store game type in client", func(t *testing.T) {
-		caller := &SpyCaller{}
+		spyCaller := &SpyCaller{
+			response: map[string]apiResponse{
+				"loginCheck": {
+					result: []byte(`{"event":true, "data":{"user": {"UserID": "1325", "HallID":"10"}, "Session":{"Session":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}}}`),
+					err:    nil,
+				},
+			},
+		}
 		spyHub := &SpyHub{}
-		server := httptest.NewServer(gode.NewServer(spyHub, caller))
-		wsClient := mustDialWS(t, makeWebSocketURL(server, "/casino/5145"))
-		wsClient2 := mustDialWS(t, makeWebSocketURL(server, "/casino/5188"))
+		server := httptest.NewServer(gode.NewServer(spyHub, spyCaller))
+		player1 := mustDialWS(t, makeWebSocketURL(server, "/casino/5145"))
+		writeBinaryMsg(t, player1, `{"action":"loginBySid","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
+		player2 := mustDialWS(t, makeWebSocketURL(server, "/casino/5188"))
+		writeBinaryMsg(t, player2, `{"action":"loginBySid","sid":"21d9b36e42c8275a4359f6815b859df05ec2bb0a"}`)
 		defer server.Close()
-		defer wsClient.Close()
-		defer wsClient2.Close()
+		defer player1.Close()
+		defer player2.Close()
 
 		waitForProcess()
-		if spyHub.clients[0].GameType != 5145 {
-			t.Errorf("expected client0 has game type %d , got %d", 5145, spyHub.clients[0].GameType)
+		if spyHub.GetClient(0).GameType != 5145 {
+			t.Errorf("expected client0 has game type %d , got %d", 5145, spyHub.GetClient(0).GameType)
 		}
-		if spyHub.clients[1].GameType != 5188 {
-			t.Errorf("expected client0 has game type %d , got %d", 5188, spyHub.clients[1].GameType)
+		if spyHub.GetClient(1).GameType != 5188 {
+			t.Errorf("expected client0 has game type %d , got %d", 5188, spyHub.GetClient(1).GameType)
 		}
 	})
 }

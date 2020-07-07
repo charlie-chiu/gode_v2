@@ -62,19 +62,35 @@ func (l apiLog) String() string {
 
 type SpyHub struct {
 	clients []*client.Client
+
+	mutex sync.Mutex
 }
 
 func (h *SpyHub) NumberOfClients() int {
+	h.mutex.Lock()
+	defer h.mutex.Unlock()
 	return len(h.clients)
 }
 
 func (h *SpyHub) Register(c *client.Client) error {
+	h.mutex.Lock()
+	defer h.mutex.Unlock()
 	h.clients = append(h.clients, c)
 
 	return nil
 }
 
 func (h *SpyHub) Unregister(client *client.Client) {}
+
+func (h *SpyHub) GetClient(index int) *client.Client {
+	h.mutex.Lock()
+	defer h.mutex.Unlock()
+	if len(h.clients) > index {
+		return h.clients[index]
+	} else {
+		return &client.Client{}
+	}
+}
 
 func assertReceiveBinaryMsg(t *testing.T, dialer *websocket.Conn, want string) {
 	t.Helper()
