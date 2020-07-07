@@ -375,7 +375,7 @@ func TestGameHandler(t *testing.T) {
 		}
 
 		waitForProcess()
-		assertLogEqual(t, expectedHistory, spyAPI.history)
+		assertLogEqual(t, expectedHistory, spyAPI.History())
 	})
 }
 
