@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"reflect"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -17,9 +18,12 @@ import (
 type SpyCaller struct {
 	history  apiHistory
 	response map[string]apiResponse
+	mutex    sync.Mutex
 }
 
 func (c *SpyCaller) Call(service types.GameType, function string, parameters ...interface{}) ([]byte, error) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
 	c.history = append(c.history, apiLog{
 		service:    service,
 		function:   function,

@@ -1,7 +1,7 @@
 package gode
 
 import (
-	"fmt"
+	"sync"
 
 	"gode/client"
 )
@@ -16,34 +16,31 @@ type ClientPool interface {
 
 type ClientHub struct {
 	// Registered clients.
-	clients map[*client.Client]bool
+	clients sync.Map
 }
 
 func NewClientHub() *ClientHub {
-	return &ClientHub{
-		//register: make(chan *Client),
-		clients: make(map[*client.Client]bool),
-	}
+	return &ClientHub{}
 }
 
 func (h *ClientHub) Register(client *client.Client) (err error) {
-	if len(h.clients) < MaxClients {
-		h.clients[client] = true
-	} else {
-		return fmt.Errorf("client full")
-	}
-	//log.Printf("new client add to hub, now have %d clients\n", len(clients.clients))
+	h.clients.Store(client, true)
 
 	return
 }
 
 func (h *ClientHub) Unregister(client *client.Client) {
-	if _, ok := h.clients[client]; ok {
-		delete(h.clients, client)
+	if _, ok := h.clients.Load(client); ok {
+		h.clients.Delete(client)
 		//log.Printf("client deleted from hub, now have %d clients\n", len(clients.clients))
 	}
 }
 
-func (h *ClientHub) NumberOfClients() int {
-	return len(h.clients)
+func (h *ClientHub) NumberOfClients() (numbers int) {
+	h.clients.Range(func(_, _ interface{}) bool {
+		numbers++
+		return true
+	})
+
+	return
 }
