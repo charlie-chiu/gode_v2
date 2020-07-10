@@ -7,18 +7,29 @@ import (
 	"strings"
 )
 
+// rfc5424
 const (
 	Debug  = 1 << iota // 1
 	Info               // 2
 	Notice             // 4
+	Warning
+	Error
+	Critical
+	Alert
+	Emergency
 
 	Nothing = 1024
 )
 
 var logText = map[int]string{
-	Debug:  "DEBUG",
-	Info:   "INFO",
-	Notice: "NOTICE",
+	Debug:     "DEBUG",
+	Info:      "INFO",
+	Notice:    "NOTICE",
+	Warning:   "WARNING",
+	Error:     "ERROR",
+	Critical:  "CRITICAL",
+	Alert:     "ALERT",
+	Emergency: "EMERGENCY",
 
 	Nothing: "NOTHING",
 }
@@ -54,6 +65,16 @@ func ParseLogLevel(logLevel string) int {
 		return Info
 	case "NOTICE":
 		return Notice
+	case "WARNING":
+		return Warning
+	case "ERROR":
+		return Error
+	case "CRITICAL":
+		return Critical
+	case "ALERT":
+		return Alert
+	case "EMERGENCY":
+		return Emergency
 	default:
 		return Nothing
 	}
