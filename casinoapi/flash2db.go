@@ -32,7 +32,9 @@ func (f *Flash2db) Call(gt types.GameType, function string, parameters ...interf
 	url := f.url + f.makePath(service, function, parameters...)
 	response, err := http.Get(url)
 	if err != nil {
-		return nil, fmt.Errorf("flash2db get error %v", err)
+		msg := fmt.Sprintf("f2db get error: %v", err)
+		log.Print(log.Error, msg)
+		return nil, fmt.Errorf(msg)
 	}
 	if response.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("flash2db not got code 200")
