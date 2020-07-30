@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gorilla/websocket"
 	"gode"
 	"gode/client"
 	"gode/log"
@@ -161,6 +162,34 @@ func TestHandleClientException(t *testing.T) {
 		recorder := httptest.NewRecorder()
 		server.ServeHTTP(recorder, request)
 		assertResponseCode(t, recorder.Code, http.StatusBadRequest)
+	})
+
+	t.Run("connect without valid ws sub protocol", func(t *testing.T) {
+		const fxProtocol = "gbcasino.bin"
+
+		spyAPI := &SpyAPI{}
+		server := httptest.NewServer(gode.NewServer(gode.NewClientHub(), spyAPI))
+
+		url := makeWebSocketURL(server, "/casino/5145")
+		dialer := websocket.Dialer{
+			Subprotocols: []string{fxProtocol},
+		}
+		player, resp, err := dialer.Dial(url, nil)
+		if err != nil {
+			t.Fatalf("could not open a ws connection on %s %v", url, err)
+		}
+
+		gotProtocol := resp.Header.Get("Sec-WebSocket-Protocol")
+		if gotProtocol != fxProtocol {
+			t.Fatalf("response header Sec-WebSocket-Protocol want %q, got %q", fxProtocol, gotProtocol)
+		}
+
+		assertWithin(t, timeout, func() {
+			assertReceiveBinaryMsg(t, player, `{"action":"ready","result":null}`)
+		})
+
+		defer server.Close()
+		defer player.Close()
 	})
 
 	t.Run("not response when send incorrect ws data", func(t *testing.T) {
